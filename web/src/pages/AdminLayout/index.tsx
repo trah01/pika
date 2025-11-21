@@ -126,24 +126,24 @@ const AdminLayout = () => {
     return (
         <div className="min-h-screen bg-white">
             {/* 顶部导航栏 */}
-            <header className="fixed top-0 left-0 right-0 z-[300] h-14 border-b border-white/20 bg-[#060b16]/95 backdrop-blur">
-                <div className="flex h-full items-center justify-between px-4">
+            <header className="fixed top-0 left-0 right-0 z-[300] h-14 border-b border-white/10 bg-[#0f172a]/90 backdrop-blur-md shadow-sm">
+                <div className="flex h-full items-center justify-between px-4 lg:px-6">
                     <div className="flex items-center gap-3 text-white">
-                        <div className="flex items-center justify-center">
-                            <img src="/logo.png" alt="Pika" className="h-10 w-10" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10">
+                            <img src="/logo.png" alt="Pika" className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">Pika Monitor</p>
-                            <p className="text-sm font-semibold">控制台</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400">Pika Monitor</p>
+                            <p className="text-sm font-semibold text-slate-100">控制台</p>
                         </div>
                     </div>
 
-                    <Space size={8} className="flex h-full items-center">
+                    <Space size={12} className="flex h-full items-center">
                         <Button
                             type="text"
                             icon={<Eye className="h-4 w-4" strokeWidth={2} />}
                             onClick={() => window.open('/', '_blank')}
-                            className="hidden !h-9 !items-center !rounded-full !px-3 !text-xs !text-white/80 hover:!bg-white/10 sm:!inline-flex"
+                            className="hidden !h-8 !items-center !rounded-full !border !border-white/10 !bg-white/5 !px-4 !text-xs !font-medium !text-slate-300 hover:!bg-white/10 hover:!text-white sm:!inline-flex transition-all"
                         >
                             公共页面
                         </Button>
@@ -151,21 +151,22 @@ const AdminLayout = () => {
                             type="text"
                             icon={<BookOpen className="h-4 w-4" strokeWidth={2} />}
                             onClick={() => navigate('/admin/agents-install')}
-                            className="!h-9 !items-center !rounded-full !px-3 !text-xs !text-white hover:!bg-blue-500/10"
+                            className="hidden !h-8 !items-center !rounded-full !border !border-white/10 !bg-white/5 !px-4 !text-xs !font-medium !text-slate-300 hover:!bg-white/10 hover:!text-white sm:!inline-flex transition-all"
                         >
                             部署指南
                         </Button>
+                        <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
                         <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
                             <button
                                 type="button"
-                                className="flex cursor-pointer items-center gap-2 rounded-full border border-white/20 bg-white/5 px-2.5 py-1 text-left text-white transition-colors hover:border-white/40"
+                                className="group flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/5 pl-1 pr-3 py-1 text-left text-slate-200 transition-all hover:bg-white/10 hover:text-white"
                             >
                                 <Avatar
                                     size={24}
-                                    icon={<UserIcon className="h-3.5 w-3.5" strokeWidth={2} />}
-                                    className="!bg-white/20"
+                                    icon={<UserIcon className="h-3.5 w-3.5 text-slate-900" strokeWidth={2} />}
+                                    className="!bg-teal-500"
                                 />
-                                <span className="text-xs font-medium">
+                                <span className="text-xs font-medium group-hover:text-white">
                                     {userInfo?.nickname || userInfo?.username || '访客'}
                                 </span>
                             </button>
@@ -176,20 +177,19 @@ const AdminLayout = () => {
 
             {/* 侧边栏 */}
             <aside
-                className="fixed left-0 z-[200] hidden h-screen overflow-hidden border-r border-white/60 bg-white/90 shadow-sm backdrop-blur lg:block"
+                className="fixed left-0 z-[200] hidden h-screen overflow-hidden border-r border-slate-100 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] lg:block"
                 style={{
                     width: SIDEBAR_WIDTH,
                     paddingTop: HEADER_HEIGHT,
                 }}
             >
                 <div className="flex h-full flex-col">
-                    <div className="px-4 py-4">
-                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400">导航</p>
-                        <p className="mt-1 text-lg font-semibold text-gray-900">管理面板</p>
+                    <div className="px-6 py-6">
+                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">导航菜单</p>
                     </div>
                     {/* 菜单区域 */}
-                    <nav className="flex-1 overflow-y-auto px-3 pb-6">
-                        <div className="space-y-1">
+                    <nav className="flex-1 overflow-y-auto px-4 pb-6">
+                        <div className="space-y-1.5">
                             {menuItems.map((item) => {
                                 const isActive = item.key === selectedKey;
                                 return (
@@ -198,22 +198,22 @@ const AdminLayout = () => {
                                         type="button"
                                         onClick={() => handleNavigate(item)}
                                         className={cn(
-                                            'group relative flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm transition-all cursor-pointer',
+                                            'group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer',
                                             isActive
-                                                ? 'bg-gradient-to-r from-blue-500/10 to-blue-500/5 text-blue-600 shadow-sm'
-                                                : 'text-gray-600 hover:bg-gray-100'
+                                                ? 'bg-teal-50 text-teal-700 shadow-sm'
+                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                                         )}
                                     >
                                         <span
                                             className={cn(
-                                                'flex h-8 w-8 items-center justify-center rounded-xl bg-white text-gray-500 shadow-sm',
-                                                isActive && 'bg-blue-600 text-white'
+                                                'flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
+                                                isActive ? 'bg-white text-teal-600 shadow-sm' : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:shadow-sm'
                                             )}
                                         >
                                             {item.icon}
                                         </span>
-                                        <span className="truncate font-medium">{item.label}</span>
-                                        {isActive && <span className="ml-auto text-[10px] uppercase text-blue-500">当前</span>}
+                                        <span className="truncate">{item.label}</span>
+                                        {isActive && <div className="absolute right-2 h-1.5 w-1.5 rounded-full bg-teal-500" />}
                                     </button>
                                 );
                             })}
@@ -222,13 +222,15 @@ const AdminLayout = () => {
 
                     {/* 版本信息 */}
                     {version && (
-                        <div className="border-t border-gray-100 px-4 py-4">
-                            <div className="rounded-2xl bg-gray-50/90 p-3 shadow-inner">
-                                <p className="text-[11px] uppercase tracking-[0.25em] text-gray-400">版本信息</p>
-                                <div className="mt-2 flex items-end justify-between">
+                        <div className="border-t border-slate-100 px-6 py-6">
+                            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-teal-600 shadow-sm">
+                                        <Activity className="h-4 w-4" />
+                                    </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-900">{version}</p>
-                                        <p className="text-[11px] text-gray-500 uppercase tracking-[0.1em]">Pika Monitor</p>
+                                        <p className="text-xs font-medium text-slate-500">当前版本</p>
+                                        <p className="text-sm font-bold text-slate-900">{version}</p>
                                     </div>
                                 </div>
                             </div>
@@ -259,10 +261,10 @@ const AdminLayout = () => {
                                 onClick={() => handleNavigate(item)}
                                 className={cn(
                                     'flex flex-col items-center justify-center gap-1 text-xs font-medium',
-                                    isActive ? 'text-blue-600' : 'text-gray-500'
+                                    isActive ? 'text-teal-600' : 'text-gray-500'
                                 )}
                             >
-                                <span className={cn('rounded-full p-2', isActive ? 'bg-blue-50 text-blue-600' : 'text-current')}>
+                                <span className={cn('rounded-full p-2', isActive ? 'bg-teal-50 text-teal-600' : 'text-current')}>
                                     {item.icon}
                                 </span>
                                 <span>{item.label}</span>

@@ -210,7 +210,7 @@ const MonitorList = () => {
             dataIndex: 'type',
             width: 80,
             render: (type) => (
-                <Tag color={type === 'tcp' ? 'blue' : 'green'} className="uppercase">
+                <Tag color={type === 'tcp' ? 'cyan' : 'green'} className="uppercase">
                     {type}
                 </Tag>
             ),

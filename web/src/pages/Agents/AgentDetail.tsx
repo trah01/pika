@@ -159,7 +159,7 @@ const AgentDetail = () => {
                         <Descriptions.Item label="主机名">{agent?.hostname}</Descriptions.Item>
                         <Descriptions.Item label="IP地址">{agent?.ip}</Descriptions.Item>
                         <Descriptions.Item label="操作系统">
-                            <Tag color="blue">{agent?.os}</Tag>
+                            <Tag color="cyan">{agent?.os}</Tag>
                         </Descriptions.Item>
                         <Descriptions.Item label="系统架构">
                             <Tag>{agent?.arch}</Tag>
@@ -189,7 +189,7 @@ const AgentDetail = () => {
                             <Space>
                                 <Shield size={20}/>
                                 <span className="font-semibold">最近审计结果</span>
-                                <Tag color="blue">
+                                <Tag color="cyan">
                                     {dayjs(auditResult.startTime).format('YYYY-MM-DD HH:mm')}
                                 </Tag>
                             </Space>

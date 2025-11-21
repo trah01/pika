@@ -451,7 +451,7 @@ const AuditResult = () => {
                                             <span>
                                                 {dayjs(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}
                                             </span>
-                                            <Tag color="blue">{item.systemInfo.os}</Tag>
+                                            <Tag color="cyan">{item.systemInfo.os}</Tag>
                                         </Space>
                                     }
                                     description={

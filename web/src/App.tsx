@@ -11,7 +11,14 @@ dayjs.locale('zh-cn');
 
 function App() {
     return (
-        <ConfigProvider locale={zhCN}>
+        <ConfigProvider
+            locale={zhCN}
+            theme={{
+                token: {
+                    colorPrimary: '#0d9488', // teal-600
+                },
+            }}
+        >
             <AntdApp>
                 <RouterProvider router={router}/>
             </AntdApp>

@@ -129,9 +129,9 @@ type AccentVariant = 'blue' | 'emerald' | 'purple' | 'sky' | 'amber';
 
 const accentThemes: Record<AccentVariant, { icon: string; badge: string; highlight: string }> = {
     blue: {
-        icon: 'bg-blue-50 text-blue-600',
-        badge: 'bg-blue-100 text-blue-600',
-        highlight: 'text-blue-600',
+        icon: 'bg-teal-50 text-teal-600',
+        badge: 'bg-teal-100 text-teal-600',
+        highlight: 'text-teal-600',
     },
     emerald: {
         icon: 'bg-emerald-50 text-emerald-600',
@@ -183,8 +183,8 @@ const TimeRangeSelector = ({
                     onClick={() => onChange(option.value)}
                     className={`rounded-lg border px-3 py-1.5 text-sm transition ${
                         isActive
-                            ? 'border-blue-200 bg-blue-600 text-white'
-                            : 'border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                            ? 'border-teal-200 bg-teal-600 text-white'
+                            : 'border-slate-200 bg-white text-slate-500 hover:border-teal-200 hover:text-teal-600'
                     }`}
                 >
                     {option.label}
@@ -736,7 +736,7 @@ const ServerDetail = () => {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900">
             <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
-                <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 p-6 text-white shadow-xl">
+                <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-900 p-6 text-white shadow-xl">
                     <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_top,rgba(255,255,255,0.35),transparent_55%)]"/>
                     <div className="relative flex flex-col gap-6">
                         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -829,7 +829,7 @@ const ServerDetail = () => {
                             <section>
                                 <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
                                     <span
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-teal-600">
                                         <Cpu className="h-4 w-4"/>
                                     </span>
                                     CPU 使用率
@@ -839,8 +839,8 @@ const ServerDetail = () => {
                                         <AreaChart data={cpuChartData}>
                                             <defs>
                                                 <linearGradient id="cpuAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4}/>
-                                                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                                                    <stop offset="5%" stopColor="#0d9488" stopOpacity={0.4}/>
+                                                    <stop offset="95%" stopColor="#0d9488" stopOpacity={0}/>
                                                 </linearGradient>
                                             </defs>
                                             <CartesianGrid stroke="#e5e7eb" strokeDasharray="4 4"/>
@@ -860,7 +860,7 @@ const ServerDetail = () => {
                                                 type="monotone"
                                                 dataKey="usage"
                                                 name="CPU 使用率"
-                                                stroke="#2563eb"
+                                                stroke="#0d9488"
                                                 strokeWidth={2}
                                                 fill="url(#cpuAreaGradient)"
                                                 activeDot={{r: 3}}
@@ -928,7 +928,7 @@ const ServerDetail = () => {
                                 <div className="mb-3 flex items-center justify-between">
                                     <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                                         <span
-                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-teal-600">
                                             <Network className="h-4 w-4"/>
                                         </span>
                                         网络流量（MB/s）
@@ -937,7 +937,7 @@ const ServerDetail = () => {
                                         <select
                                             value={selectedInterface}
                                             onChange={(e) => setSelectedInterface(e.target.value)}
-                                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-blue-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-teal-300 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
                                         >
                                             <option value="all">所有网卡</option>
                                             {availableInterfaces.map((iface) => (
@@ -977,7 +977,7 @@ const ServerDetail = () => {
                                                 type="monotone"
                                                 dataKey="download"
                                                 name="下行"
-                                                stroke="#2C70F6"
+                                                stroke="#06b6d4"
                                                 strokeWidth={2}
                                                 dot={false}
                                                 activeDot={{r: 3}}
@@ -1020,7 +1020,7 @@ const ServerDetail = () => {
                                                 type="monotone"
                                                 dataKey="read"
                                                 name="读取"
-                                                stroke="#2C70F6"
+                                                stroke="#06b6d4"
                                                 strokeWidth={2}
                                                 dot={false}
                                                 activeDot={{r: 3}}

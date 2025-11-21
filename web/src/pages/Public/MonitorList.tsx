@@ -124,7 +124,7 @@ const MonitorList = () => {
                                 navigate(`/monitors/${encodeURIComponent(stats.id)}`);
                             }
                         }}
-                        className="group relative flex h-full cursor-pointer flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition duration-200 hover:border-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                        className="group relative flex h-full cursor-pointer flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition duration-200 hover:border-teal-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300"
                     >
                         <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
@@ -150,7 +150,7 @@ const MonitorList = () => {
                                 className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                                 <div className="flex items-center gap-2">
                                     <div
-                                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-teal-600">
                                         <Clock className="h-3.5 w-3.5"/>
                                     </div>
                                     <span className="text-xs font-medium text-slate-600">当前响应</span>
@@ -164,7 +164,7 @@ const MonitorList = () => {
                                 className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                                 <div className="flex items-center gap-2">
                                     <div
-                                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-teal-600">
                                         <Clock className="h-3.5 w-3.5"/>
                                     </div>
                                     <span className="text-xs font-medium text-slate-600">24h 平均</span>
@@ -197,7 +197,7 @@ const MonitorList = () => {
                                     className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                                     <div className="flex items-center gap-2">
                                         <Shield
-                                            className={`h-4 w-4 ${certExpiringSoon ? 'text-yellow-600' : 'text-blue-600'}`}/>
+                                            className={`h-4 w-4 ${certExpiringSoon ? 'text-yellow-600' : 'text-teal-600'}`}/>
                                         <span className="text-xs font-medium text-slate-600">证书到期</span>
                                     </div>
                                     <div className="text-right">
@@ -239,7 +239,7 @@ const MonitorList = () => {
                                     navigate(`/monitors/${encodeURIComponent(stats.id)}`);
                                 }
                             }}
-                            className="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 transition hover:border-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                            className="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 transition hover:border-teal-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300"
                         >
                             <div className="mb-3 flex items-start justify-between gap-2">
                                 <div className="flex-1 min-w-0">
@@ -318,8 +318,8 @@ const MonitorList = () => {
             {/* 桌面端：使用表格布局 */}
             <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white lg:block">
                 <table className="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead className="bg-blue-50">
-                    <tr className="text-left text-xs font-semibold uppercase tracking-wide text-blue-600">
+                    <thead className="bg-teal-50">
+                    <tr className="text-left text-xs font-semibold uppercase tracking-wide text-teal-600">
                         <th className="px-5 py-3">监控项</th>
                         <th className="px-5 py-3">状态</th>
                         <th className="px-5 py-3">当前响应</th>
@@ -345,7 +345,7 @@ const MonitorList = () => {
                                         navigate(`/monitors/${encodeURIComponent(stats.id)}`);
                                     }
                                 }}
-                                className="cursor-pointer transition hover:bg-blue-50 focus-within:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+                                className="cursor-pointer transition hover:bg-teal-50 focus-within:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200"
                             >
                                 <td className="px-5 py-4 align-center">
                                     <div>

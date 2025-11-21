@@ -71,7 +71,7 @@ const AgentList = () => {
             render: (_, record) => (
                 <div className="space-y-1">
                     <div className="font-medium">{record.name || record.hostname}</div>
-                    <Tag color="geekblue" bordered={false}>{record.os} · {record.arch}</Tag>
+                    <Tag color="teal" bordered={false}>{record.os} · {record.arch}</Tag>
                 </div>
             ),
         },
@@ -80,14 +80,14 @@ const AgentList = () => {
             dataIndex: 'platform',
             key: 'platform',
             hideInSearch: true,
-            render: (text) => text ? <Tag color="purple" bordered={false}>{text}</Tag> : '-',
+            render: (text) => text ? <Tag color="blue" bordered={false}>{text}</Tag> : '-',
         },
         {
             title: '位置',
             dataIndex: 'location',
             key: 'location',
             hideInSearch: true,
-            render: (text) => text ? <Tag color="blue" bordered={false}>{text}</Tag> : '-',
+            render: (text) => text ? <Tag color="geekblue" bordered={false}>{text}</Tag> : '-',
         },
         {
             title: '到期时间',
@@ -211,42 +211,48 @@ const AgentList = () => {
             <Divider/>
 
             {/* 探针列表 */}
-            <ProTable<Agent>
-                actionRef={actionRef}
-                rowKey="id"
-                search={{labelWidth: 80}}
-                columns={columns}
-                scroll={{x: 'max-content'}}
-                pagination={{
-                    defaultPageSize: 10,
-                    showSizeChanger: true,
-                }}
-                options={false}
-                request={async (params) => {
-                    const {current = 1, pageSize = 10, hostname, ip, status} = params;
-                    try {
-                        const response = await getAgentPaging(
-                            current,
-                            pageSize,
-                            hostname,
-                            ip,
-                            status as string | undefined
-                        );
-                        const items = response.data.items || [];
-                        return {
-                            data: items,
-                            success: true,
-                            total: response.data.total,
-                        };
-                    } catch (error: unknown) {
-                        messageApi.error(getErrorMessage(error, '获取探针列表失败'));
-                        return {
-                            data: [],
-                            success: false,
-                        };
-                    }
-                }}
-            />
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <ProTable<Agent>
+                    actionRef={actionRef}
+                    rowKey="id"
+                    search={{
+                        labelWidth: 80,
+                        filterType: 'light',
+                    }}
+                    columns={columns}
+                    scroll={{x: 'max-content'}}
+                    pagination={{
+                        defaultPageSize: 10,
+                        showSizeChanger: true,
+                    }}
+                    options={false}
+                    tableAlertRender={false}
+                    request={async (params) => {
+                        const {current = 1, pageSize = 10, hostname, ip, status} = params;
+                        try {
+                            const response = await getAgentPaging(
+                                current,
+                                pageSize,
+                                hostname,
+                                ip,
+                                status as string | undefined
+                            );
+                            const items = response.data.items || [];
+                            return {
+                                data: items,
+                                success: true,
+                                total: response.data.total,
+                            };
+                        } catch (error: unknown) {
+                            messageApi.error(getErrorMessage(error, '获取探针列表失败'));
+                            return {
+                                data: [],
+                                success: false,
+                            };
+                        }
+                    }}
+                />
+            </div>
 
             {/* 编辑探针信息模态框 */}
             <Modal

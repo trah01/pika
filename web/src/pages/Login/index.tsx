@@ -82,7 +82,7 @@ const Login = () => {
                     <div className="rounded-[26px] bg-white p-8 shadow-2xl sm:p-10">
                         <div className="mb-8 text-center">
                             <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1 text-xs font-medium text-slate-600">
-                                <Sparkles className="h-4 w-4 text-blue-600"/>
+                                <Sparkles className="h-4 w-4 text-teal-600"/>
                                 Pika Monitor
                             </div>
                             <h1 className="mt-4 text-3xl font-semibold text-slate-900">登录 Pika 控制台</h1>

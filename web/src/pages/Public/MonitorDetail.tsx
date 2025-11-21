@@ -153,7 +153,7 @@ const StatCard = ({icon, label, value, color = 'blue'}: {
     color?: string;
 }) => {
     const colorClasses = {
-        blue: 'bg-blue-50 text-blue-600',
+        blue: 'bg-teal-50 text-teal-600',
         green: 'bg-emerald-50 text-emerald-600',
         yellow: 'bg-yellow-50 text-yellow-600',
         red: 'bg-red-50 text-red-600',
@@ -233,8 +233,8 @@ const TimeRangeSelector = ({
                     onClick={() => onChange(option.value)}
                     className={`rounded-lg border px-3 py-1.5 text-sm transition ${
                         isActive
-                            ? 'border-blue-200 bg-blue-600 text-white'
-                            : 'border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                            ? 'border-teal-200 bg-teal-600 text-white'
+                            : 'border-slate-200 bg-white text-slate-500 hover:border-teal-200 hover:text-teal-600'
                     }`}
                 >
                     {option.label}
@@ -246,7 +246,7 @@ const TimeRangeSelector = ({
 
 // 预定义的颜色方案
 const AGENT_COLORS = [
-    '#2563eb', // blue
+    '#0d9488', // teal (was blue)
     '#10b981', // emerald
     '#f59e0b', // amber
     '#8b5cf6', // violet
@@ -366,7 +366,7 @@ const MonitorDetail = () => {
         <div className="min-h-screen bg-slate-50 text-slate-900">
             <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
                 {/* Hero Section */}
-                <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 p-6 text-white shadow-xl">
+                <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-900 p-6 text-white shadow-xl">
                     <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_top,rgba(255,255,255,0.35),transparent_55%)]"/>
                     <div className="relative flex flex-col gap-6">
                         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -422,13 +422,13 @@ const MonitorDetail = () => {
                                 icon={<Clock className="h-6 w-6"/>}
                                 label="当前响应"
                                 value={formatTime(firstStat.currentResponse)}
-                                color="blue"
+                                color="cyan"
                             />
                             <StatCard
                                 icon={<Clock className="h-6 w-6"/>}
                                 label="24h 平均响应"
                                 value={formatTime(firstStat.avgResponse24h)}
-                                color="blue"
+                                color="cyan"
                             />
                             <StatCard
                                 icon={<CheckCircle2 className="h-6 w-6"/>}
@@ -482,7 +482,7 @@ const MonitorDetail = () => {
                                     <select
                                         value={selectedAgent}
                                         onChange={(e) => setSelectedAgent(e.target.value)}
-                                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:border-blue-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:border-teal-300 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
                                     >
                                         <option value="all">所有探针</option>
                                         {availableAgents.map((agent) => (
