@@ -135,7 +135,7 @@ const ServerCard = ({ agent, onClick }: { agent: AgentWithMetrics, onClick: () =
                 <NetworkStat up={netUp} down={netDown} />
                 <div className="text-[10px] text-zinc-600 font-mono flex items-center gap-1">
                     <Clock size={10} />
-                    {agent.metrics?.bootTime ? new Date(agent.metrics.bootTime * 1000).toLocaleDateString() : 'Unknown'}
+                    {agent.metrics?.host?.bootTime ? new Date(agent.metrics.host.bootTime * 1000).toLocaleDateString() : 'Unknown'}
                 </div>
             </div>
         </div>
