@@ -1,14 +1,27 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-950 text-slate-200 antialiased;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 100% 0%, rgba(74, 222, 128, 0.05) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
 /* 全局样式 */
 * {
     scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
 }
 
 /* 滚动条样式 */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -16,10 +29,23 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgb(209, 213, 219);
-    border-radius: 4px;
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgb(156, 163, 175);
+    background: rgba(148, 163, 184, 0.5);
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  @apply bg-slate-900/70 backdrop-blur-md border border-white/5;
+}
+
+.glass-hover {
+  @apply hover:bg-white/5 transition-colors duration-200;
+}
+
+.glow-text {
+  text-shadow: 0 0 20px rgba(45, 212, 191, 0.5);
 }

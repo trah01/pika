@@ -198,9 +198,9 @@ const MonitorList = () => {
             dataIndex: 'name',
             render: (_, record) => (
                 <div className="flex flex-col">
-                    <span className="font-medium text-gray-900">{record.name}</span>
+                    <span className="font-medium text-slate-200">{record.name}</span>
                     {record.description ? (
-                        <span className="text-xs text-gray-500">{record.description}</span>
+                        <span className="text-xs text-slate-400">{record.description}</span>
                     ) : null}
                 </div>
             ),
@@ -300,18 +300,31 @@ const MonitorList = () => {
                 ]}
             />
 
-            <Divider/>
+            <Divider className="border-white/5" />
 
-            <ProTable<MonitorTask>
-                columns={columns}
-                rowKey="id"
-                actionRef={actionRef}
-                search={false}
-                params={{keyword}}
-                pagination={{
-                    defaultPageSize: 10,
-                    showSizeChanger: true,
-                }}
+            <div className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl overflow-hidden">
+                <ProTable<MonitorTask>
+                    columns={columns}
+                    rowKey="id"
+                    actionRef={actionRef}
+                    search={false}
+                    options={{
+                        density: false,
+                        setting: false,
+                        fullScreen: true,
+                    }}
+                    className="bg-transparent"
+                    tableStyle={{ background: 'transparent' }}
+                    cardProps={{
+                        bodyStyle: { padding: 0 },
+                        className: '!bg-transparent'
+                    }}
+                    params={{keyword}}
+                    pagination={{
+                        defaultPageSize: 10,
+                        showSizeChanger: true,
+                        className: "!px-6 !py-4"
+                    }}
                 toolBarRender={() => [
                     <Input.Search
                         key="search"
@@ -345,6 +358,7 @@ const MonitorList = () => {
                     }
                 }}
             />
+            </div>
 
             <Modal
                 title={editingMonitor ? '编辑监控项' : '新建监控项'}

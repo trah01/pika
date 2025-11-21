@@ -126,7 +126,7 @@ const ApiKeyList = () => {
             title: '名称',
             dataIndex: 'name',
             key: 'name',
-            render: (text) => <span className="font-medium text-gray-900">{text}</span>,
+            render: (text) => <span className="font-medium text-slate-200">{text}</span>,
         },
         {
             title: 'API密钥',
@@ -139,7 +139,7 @@ const ApiKeyList = () => {
                 const displayText = isVisible ? fullKey : (fullKey.length > 8 ? `${fullKey.substring(0, 8)}...` : fullKey);
                 return (
                     <div className="flex items-center gap-2">
-                        <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
+                        <code className="text-xs bg-white/10 px-2 py-1 rounded font-mono">
                             {displayText}
                         </code>
                         <Button
@@ -176,7 +176,7 @@ const ApiKeyList = () => {
             key: 'createdAt',
             hideInSearch: true,
             render: (value: number) => (
-                <span className="text-gray-600">{dayjs(value).format('YYYY-MM-DD HH:mm')}</span>
+                <span className="text-slate-400">{dayjs(value).format('YYYY-MM-DD HH:mm')}</span>
             ),
             width: 180,
         },
@@ -186,7 +186,7 @@ const ApiKeyList = () => {
             key: 'updatedAt',
             hideInSearch: true,
             render: (value: number) => (
-                <span className="text-gray-600">{dayjs(value).format('YYYY-MM-DD HH:mm')}</span>
+                <span className="text-slate-400">{dayjs(value).format('YYYY-MM-DD HH:mm')}</span>
             ),
             width: 180,
         },
@@ -259,20 +259,31 @@ const ApiKeyList = () => {
                 ]}
             />
 
-            <Divider/>
+            <Divider className="border-white/5" />
 
             {/* API密钥列表 */}
+            <div className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl overflow-hidden">
             <ProTable<ApiKey>
 
                 actionRef={actionRef}
                 rowKey="id"
-                search={{labelWidth: 80}}
+                search={{
+                    labelWidth: 80,
+                    className: "!bg-transparent !p-4"
+                }}
                 columns={columns}
                 pagination={{
                     defaultPageSize: 10,
                     showSizeChanger: true,
+                    className: "!px-6 !py-4"
                 }}
                 options={false}
+                className="bg-transparent"
+                tableStyle={{ background: 'transparent' }}
+                cardProps={{
+                    bodyStyle: { padding: 0 },
+                    className: '!bg-transparent'
+                }}
                 request={async (params) => {
                     const {current = 1, pageSize = 10, name} = params;
                     try {
@@ -291,6 +302,7 @@ const ApiKeyList = () => {
                     }
                 }}
             />
+            </div>
 
             {/* 新建/编辑API密钥弹窗 */}
             <Modal
@@ -357,19 +369,19 @@ const ApiKeyList = () => {
                 ]}
             >
                 <div className="space-y-4">
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <p className="text-sm text-yellow-800 font-medium">
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                        <p className="text-sm text-yellow-400 font-medium">
                             ⚠️ 重要提示:请妥善保管此密钥,关闭后将无法再次查看完整密钥!
                         </p>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">密钥名称</label>
-                        <div className="text-base font-semibold text-gray-900">{newApiKeyData?.name}</div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">密钥名称</label>
+                        <div className="text-base font-semibold text-slate-200">{newApiKeyData?.name}</div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">API密钥</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">API密钥</label>
                         <code
-                            className="block w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-sm font-mono break-all">
+                            className="block w-full bg-white/10 border border-white/10 rounded px-3 py-2 text-sm font-mono break-all">
                             {newApiKeyData?.key}
                         </code>
                     </div>

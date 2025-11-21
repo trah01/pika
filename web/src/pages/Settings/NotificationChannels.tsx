@@ -143,9 +143,9 @@ const NotificationChannels = () => {
 
     return (
         <div>
-            <div className="mb-4">
-                <h2 className="text-xl font-bold">通知渠道管理</h2>
-                <p className="text-gray-500 mt-2">配置钉钉、企业微信、飞书和自定义Webhook通知渠道</p>
+            <div className="mb-6">
+                <h2 className="text-xl font-bold text-slate-200">通知渠道管理</h2>
+                <p className="text-slate-400 mt-2">配置钉钉、企业微信、飞书和自定义Webhook通知渠道</p>
             </div>
 
             <Form form={form} layout="vertical" onFinish={handleSave}>
@@ -154,16 +154,16 @@ const NotificationChannels = () => {
                     <Card
                         title={
                             <div className={'flex items-center gap-2'}>
-                                <div>钉钉通知</div>
-                                <div className={'text-xs font-normal'}>
+                                <div className="text-slate-200">钉钉通知</div>
+                                <div className={'text-xs font-normal text-slate-400'}>
                                     了解更多：<a href="https://open.dingtalk.com/document/robots/custom-robot-access"
                                                 target="_blank"
-                                                rel="noopener noreferrer">https://open.dingtalk.com/document/robots/custom-robot-access</a>
+                                                rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300">https://open.dingtalk.com/document/robots/custom-robot-access</a>
                                 </div>
                             </div>
                         }
-                        type="inner"
-                        className="mb-4"
+                        bordered={false}
+                        className="mb-4 rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl"
                         extra={
                             <Button
                                 type="link"
@@ -215,16 +215,16 @@ const NotificationChannels = () => {
                     <Card
                         title={
                             <div className={'flex items-center gap-2'}>
-                                <div>企业微信通知</div>
-                                <div className={'text-xs font-normal'}>
+                                <div className="text-slate-200">企业微信通知</div>
+                                <div className={'text-xs font-normal text-slate-400'}>
                                     了解更多：<a href="https://work.weixin.qq.com/api/doc/90000/90136/91770"
                                                 target="_blank"
-                                                rel="noopener noreferrer">https://work.weixin.qq.com/api/doc/90000/90136/91770</a>
+                                                rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300">https://work.weixin.qq.com/api/doc/90000/90136/91770</a>
                                 </div>
                             </div>
                         }
-                        type="inner"
-                        className="mb-4"
+                        bordered={false}
+                        className="mb-4 rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl"
                         extra={
                             <Button
                                 type="link"
@@ -265,18 +265,18 @@ const NotificationChannels = () => {
                     <Card
                         title={
                             <div className={'flex items-center gap-2'}>
-                                <div>飞书通知</div>
-                                <div className={'text-xs font-normal'}>
+                                <div className="text-slate-200">飞书通知</div>
+                                <div className={'text-xs font-normal text-slate-400'}>
                                     点击 <a
                                     href="https://www.feishu.cn/hc/zh-CN/articles/360024984973-%E5%9C%A8%E7%BE%A4%E7%BB%84%E4%B8%AD%E4%BD%BF%E7%94%A8%E6%9C%BA%E5%99%A8%E4%BA%BA"
                                     target="_blank"
-                                    rel="noopener noreferrer">这里</a>
+                                    rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300">这里</a>
                                     了解如何获取 Webhook URL。
                                 </div>
                             </div>
                         }
-                        type="inner"
-                        className="mb-4"
+                        bordered={false}
+                        className="mb-4 rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl"
                         extra={
                             <Button
                                 type="link"
@@ -326,9 +326,9 @@ const NotificationChannels = () => {
 
                     {/* 自定义 Webhook */}
                     <Card
-                        title="自定义 Webhook"
-                        type="inner"
-                        className="mb-4"
+                        title={<span className="text-slate-200">自定义 Webhook</span>}
+                        bordered={false}
+                        className="mb-4 rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl"
                         extra={
                             <Button
                                 type="link"
@@ -369,10 +369,10 @@ const NotificationChannels = () => {
                             }
                         </Form.Item>
 
-                        <div className={'space-y-2'}>
+                        <div className={'space-y-2 text-slate-300'}>
                             <div>请求方式为 POST，消息格式如下</div>
                             <div>
-                                <pre className={'border p-4 rounded-md'}>
+                                <pre className={'border border-white/10 bg-slate-950/50 p-4 rounded-md font-mono text-xs text-slate-400'}>
                                     {JSON.stringify({
                                         "msg_type": "text",
                                         "text": {

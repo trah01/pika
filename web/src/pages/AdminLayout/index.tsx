@@ -15,8 +15,8 @@ interface NavItem {
     icon: JSX.Element;
 }
 
-const SIDEBAR_WIDTH = 240;
-const HEADER_HEIGHT = 56;
+const SIDEBAR_WIDTH = 260;
+const HEADER_HEIGHT = 64;
 
 const AdminLayout = () => {
     const navigate = useNavigate();
@@ -124,26 +124,26 @@ const AdminLayout = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-transparent text-slate-200 selection:bg-teal-500/30 selection:text-teal-200">
             {/* 顶部导航栏 */}
-            <header className="fixed top-0 left-0 right-0 z-[300] h-14 border-b border-white/10 bg-[#0f172a]/90 backdrop-blur-md shadow-sm">
+            <header className="fixed top-0 left-0 right-0 z-[300] h-16 border-b border-white/5 bg-slate-950/50 backdrop-blur-xl shadow-sm transition-all duration-300">
                 <div className="flex h-full items-center justify-between px-4 lg:px-6">
-                    <div className="flex items-center gap-3 text-white">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10">
-                            <img src="/logo.png" alt="Pika" className="h-6 w-6" />
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 shadow-[0_0_15px_rgba(20,184,166,0.3)]">
+                            <img src="/logo.png" alt="Pika" className="h-6 w-6 invert brightness-0 filter" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-400">Pika Monitor</p>
-                            <p className="text-sm font-semibold text-slate-100">控制台</p>
+                        <div className="flex flex-col">
+                            <span className="text-xs font-bold uppercase tracking-[0.25em] text-teal-400 drop-shadow-sm">Pika Monitor</span>
+                            <span className="text-sm font-medium text-slate-300">控制台</span>
                         </div>
                     </div>
 
-                    <Space size={12} className="flex h-full items-center">
+                    <Space size={16} className="flex h-full items-center">
                         <Button
                             type="text"
                             icon={<Eye className="h-4 w-4" strokeWidth={2} />}
                             onClick={() => window.open('/', '_blank')}
-                            className="hidden !h-8 !items-center !rounded-full !border !border-white/10 !bg-white/5 !px-4 !text-xs !font-medium !text-slate-300 hover:!bg-white/10 hover:!text-white sm:!inline-flex transition-all"
+                            className="hidden !h-9 !items-center !rounded-full !border !border-white/5 !bg-white/5 !px-5 !text-xs !font-medium !text-slate-300 hover:!bg-white/10 hover:!text-white hover:!border-white/10 sm:!inline-flex transition-all duration-300"
                         >
                             公共页面
                         </Button>
@@ -151,24 +151,28 @@ const AdminLayout = () => {
                             type="text"
                             icon={<BookOpen className="h-4 w-4" strokeWidth={2} />}
                             onClick={() => navigate('/admin/agents-install')}
-                            className="hidden !h-8 !items-center !rounded-full !border !border-white/10 !bg-white/5 !px-4 !text-xs !font-medium !text-slate-300 hover:!bg-white/10 hover:!text-white sm:!inline-flex transition-all"
+                            className="hidden !h-9 !items-center !rounded-full !border !border-white/5 !bg-white/5 !px-5 !text-xs !font-medium !text-slate-300 hover:!bg-white/10 hover:!text-white hover:!border-white/10 sm:!inline-flex transition-all duration-300"
                         >
                             部署指南
                         </Button>
-                        <div className="h-4 w-px bg-white/10 mx-1 hidden sm:block"></div>
-                        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+                        
+                        <div className="h-5 w-px bg-white/10 mx-2 hidden sm:block"></div>
+                        
+                        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']} overlayClassName="glass-dropdown">
                             <button
                                 type="button"
-                                className="group flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/5 pl-1 pr-3 py-1 text-left text-slate-200 transition-all hover:bg-white/10 hover:text-white"
+                                className="group flex cursor-pointer items-center gap-3 rounded-full border border-white/5 bg-white/5 pl-1 pr-4 py-1.5 text-left text-slate-200 transition-all duration-300 hover:bg-white/10 hover:border-white/10"
                             >
                                 <Avatar
-                                    size={24}
-                                    icon={<UserIcon className="h-3.5 w-3.5 text-slate-900" strokeWidth={2} />}
-                                    className="!bg-teal-500"
+                                    size={28}
+                                    icon={<UserIcon className="h-4 w-4 text-white" strokeWidth={2} />}
+                                    className="!bg-gradient-to-br !from-teal-500 !to-emerald-600"
                                 />
-                                <span className="text-xs font-medium group-hover:text-white">
-                                    {userInfo?.nickname || userInfo?.username || '访客'}
-                                </span>
+                                <div className="flex flex-col items-start leading-tight">
+                                    <span className="text-xs font-medium group-hover:text-white transition-colors">
+                                        {userInfo?.nickname || userInfo?.username || '访客'}
+                                    </span>
+                                </div>
                             </button>
                         </Dropdown>
                     </Space>
@@ -177,60 +181,61 @@ const AdminLayout = () => {
 
             {/* 侧边栏 */}
             <aside
-                className="fixed left-0 z-[200] hidden h-screen overflow-hidden border-r border-slate-100 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.02)] lg:block"
+                className="fixed left-0 z-[200] hidden h-screen overflow-hidden border-r border-white/5 bg-slate-900/30 backdrop-blur-xl lg:block transition-all duration-300"
                 style={{
                     width: SIDEBAR_WIDTH,
                     paddingTop: HEADER_HEIGHT,
                 }}
             >
                 <div className="flex h-full flex-col">
-                    <div className="px-6 py-6">
-                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">导航菜单</p>
+                    <div className="px-6 py-8">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Main Menu</p>
                     </div>
                     {/* 菜单区域 */}
-                    <nav className="flex-1 overflow-y-auto px-4 pb-6">
-                        <div className="space-y-1.5">
-                            {menuItems.map((item) => {
-                                const isActive = item.key === selectedKey;
-                                return (
-                                    <button
-                                        key={item.key}
-                                        type="button"
-                                        onClick={() => handleNavigate(item)}
+                    <nav className="flex-1 overflow-y-auto px-4 pb-6 space-y-2">
+                        {menuItems.map((item) => {
+                            const isActive = item.key === selectedKey;
+                            return (
+                                <button
+                                    key={item.key}
+                                    type="button"
+                                    onClick={() => handleNavigate(item)}
+                                    className={cn(
+                                        'group relative flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300 cursor-pointer overflow-hidden',
+                                        isActive
+                                            ? 'text-teal-200 bg-teal-500/10 shadow-[0_0_20px_rgba(20,184,166,0.1)] border border-teal-500/20'
+                                            : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
+                                    )}
+                                >
+                                    {isActive && (
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500 shadow-[0_0_10px_#14b8a6]" />
+                                    )}
+                                    
+                                    <span
                                         className={cn(
-                                            'group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer',
-                                            isActive
-                                                ? 'bg-teal-50 text-teal-700 shadow-sm'
-                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            'flex h-5 w-5 items-center justify-center transition-colors duration-300',
+                                            isActive ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300'
                                         )}
                                     >
-                                        <span
-                                            className={cn(
-                                                'flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
-                                                isActive ? 'bg-white text-teal-600 shadow-sm' : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:shadow-sm'
-                                            )}
-                                        >
-                                            {item.icon}
-                                        </span>
-                                        <span className="truncate">{item.label}</span>
-                                        {isActive && <div className="absolute right-2 h-1.5 w-1.5 rounded-full bg-teal-500" />}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                                        {item.icon}
+                                    </span>
+                                    <span className="truncate">{item.label}</span>
+                                </button>
+                            );
+                        })}
                     </nav>
 
                     {/* 版本信息 */}
                     {version && (
-                        <div className="border-t border-slate-100 px-6 py-6">
-                            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                        <div className="border-t border-white/5 px-6 py-6">
+                            <div className="rounded-xl border border-white/5 bg-white/5 p-4 backdrop-blur-sm">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-teal-600 shadow-sm">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400 shadow-sm border border-teal-500/20">
                                         <Activity className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <p className="text-xs font-medium text-slate-500">当前版本</p>
-                                        <p className="text-sm font-bold text-slate-900">{version}</p>
+                                        <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">System Version</p>
+                                        <p className="text-sm font-bold text-slate-200">{version}</p>
                                     </div>
                                 </div>
                             </div>
@@ -240,18 +245,18 @@ const AdminLayout = () => {
             </aside>
 
             {/* 主内容区 */}
-            <div className="flex flex-col bg-white" style={{ paddingTop: HEADER_HEIGHT, minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}>
+            <div className="flex flex-col" style={{ paddingTop: HEADER_HEIGHT, minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}>
                 {/* 内容区域 */}
-                <main className="flex-grow bg-white pb-20 pt-5 lg:ml-[240px] lg:pb-10">
-                    <div className="w-full px-4 pb-4 lg:px-8">
+                <main className="flex-grow pb-20 pt-8 lg:ml-[260px] lg:pb-10 transition-all duration-300">
+                    <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-8 animate-in fade-in duration-500 slide-in-from-bottom-4">
                         <Outlet />
                     </div>
                 </main>
             </div>
 
             {/* 移动端底部导航栏 */}
-            <nav className="fixed bottom-0 left-0 right-0 z-[300] border-t border-gray-200 bg-white/95 backdrop-blur lg:hidden">
-                <div className="grid h-16 grid-cols-5">
+            <nav className="fixed bottom-0 left-0 right-0 z-[300] border-t border-white/10 bg-slate-900/80 backdrop-blur-xl lg:hidden">
+                <div className="grid h-20 grid-cols-4 pb-4">
                     {menuItems.map((item) => {
                         const isActive = item.key === selectedKey;
                         return (
@@ -260,13 +265,16 @@ const AdminLayout = () => {
                                 type="button"
                                 onClick={() => handleNavigate(item)}
                                 className={cn(
-                                    'flex flex-col items-center justify-center gap-1 text-xs font-medium',
-                                    isActive ? 'text-teal-600' : 'text-gray-500'
+                                    'flex flex-col items-center justify-center gap-1.5 text-[10px] font-medium transition-colors',
+                                    isActive ? 'text-teal-400' : 'text-slate-500'
                                 )}
                             >
-                                <span className={cn('rounded-full p-2', isActive ? 'bg-teal-50 text-teal-600' : 'text-current')}>
+                                <div className={cn(
+                                    'rounded-2xl p-2.5 transition-all', 
+                                    isActive ? 'bg-teal-500/10 text-teal-400' : 'text-slate-400'
+                                )}>
                                     {item.icon}
-                                </span>
+                                </div>
                                 <span>{item.label}</span>
                             </button>
                         );

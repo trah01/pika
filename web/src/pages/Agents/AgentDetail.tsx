@@ -145,15 +145,16 @@ const AgentDetail = () => {
                 <Card
                     title={
                         <Space>
-                            <Activity size={20}/>
-                            <span className="font-semibold">探针信息</span>
+                            <Activity size={20} className="text-teal-400"/>
+                            <span className="font-semibold text-slate-200">探针信息</span>
                             {agent?.status === 1 && <Tag color="success">在线</Tag>}
                             {agent?.status !== 1 && <Tag color="error">离线</Tag>}
                         </Space>
                     }
-                    className="rounded-lg border border-gray-200 mt-0"
+                    className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl"
+                    bordered={false}
                 >
-                    <Descriptions column={{xs: 1, sm: 2}} bordered>
+                    <Descriptions column={{xs: 1, sm: 2}} bordered className="[&_.ant-descriptions-item-label]:bg-white/5 [&_.ant-descriptions-item-label]:text-slate-400 [&_.ant-descriptions-item-content]:text-slate-200 [&_.ant-descriptions-row]:border-white/5 [&_.ant-descriptions-view]:border-white/5">
                         <Descriptions.Item label="探针名称">{agent?.name}</Descriptions.Item>
                         <Descriptions.Item label="探针ID">{agent?.id}</Descriptions.Item>
                         <Descriptions.Item label="主机名">{agent?.hostname}</Descriptions.Item>
@@ -187,14 +188,15 @@ const AgentDetail = () => {
                     <Card
                         title={
                             <Space>
-                                <Shield size={20}/>
-                                <span className="font-semibold">最近审计结果</span>
+                                <Shield size={20} className="text-teal-400"/>
+                                <span className="font-semibold text-slate-200">最近审计结果</span>
                                 <Tag color="cyan">
                                     {dayjs(auditResult.startTime).format('YYYY-MM-DD HH:mm')}
                                 </Tag>
                             </Space>
                         }
-                        className="rounded-lg border border-gray-200 mt-4 lg:mt-6"
+                        className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl mt-6"
+                        bordered={false}
                         extra={
                             <Button
                                 type="link"
@@ -207,34 +209,34 @@ const AgentDetail = () => {
                         <Row gutter={[16, 16]}>
                             <Col xs={12} sm={6}>
                                 <div className="text-center">
-                                    <div className="text-2xl font-semibold text-gray-900">
+                                    <div className="text-2xl font-semibold text-slate-200">
                                         {auditResult.securityChecks.length}
                                     </div>
-                                    <div className="text-sm text-gray-500 mt-1">总检查项</div>
+                                    <div className="text-sm text-slate-400 mt-1">总检查项</div>
                                 </div>
                             </Col>
                             <Col xs={12} sm={6}>
                                 <div className="text-center">
-                                    <div className="text-2xl font-semibold text-emerald-600">
+                                    <div className="text-2xl font-semibold text-emerald-400">
                                         {auditResult.securityChecks.filter(c => c.status === 'pass').length}
                                     </div>
-                                    <div className="text-sm text-gray-500 mt-1">通过</div>
+                                    <div className="text-sm text-slate-400 mt-1">通过</div>
                                 </div>
                             </Col>
                             <Col xs={12} sm={6}>
                                 <div className="text-center">
-                                    <div className="text-2xl font-semibold text-rose-600">
+                                    <div className="text-2xl font-semibold text-rose-400">
                                         {auditResult.securityChecks.filter(c => c.status === 'fail').length}
                                     </div>
-                                    <div className="text-sm text-gray-500 mt-1">失败</div>
+                                    <div className="text-sm text-slate-400 mt-1">失败</div>
                                 </div>
                             </Col>
                             <Col xs={12} sm={6}>
                                 <div className="text-center">
-                                    <div className="text-2xl font-semibold text-orange-600">
+                                    <div className="text-2xl font-semibold text-orange-400">
                                         {auditResult.securityChecks.filter(c => c.status === 'warn').length}
                                     </div>
-                                    <div className="text-sm text-gray-500 mt-1">警告</div>
+                                    <div className="text-sm text-slate-400 mt-1">警告</div>
                                 </div>
                             </Col>
                         </Row>

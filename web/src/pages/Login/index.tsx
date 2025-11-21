@@ -76,98 +76,106 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-950">
-            <div className="mx-auto flex min-h-screen max-w-4xl items-center justify-center px-4 py-10">
-                <div className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-1">
-                    <div className="rounded-[26px] bg-white p-8 shadow-2xl sm:p-10">
-                        <div className="mb-8 text-center">
-                            <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-1 text-xs font-medium text-slate-600">
-                                <Sparkles className="h-4 w-4 text-teal-600"/>
-                                Pika Monitor
-                            </div>
-                            <h1 className="mt-4 text-3xl font-semibold text-slate-900">登录 Pika 控制台</h1>
-                            <p className="mt-2 text-sm text-slate-500">面向探针的统一监控后台</p>
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="absolute inset-0 bg-slate-950">
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px]" />
+            </div>
+
+            <div className="relative w-full max-w-md px-4">
+                <div className="relative rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-xl p-8 shadow-2xl shadow-black/50 sm:p-10">
+                    
+                    {/* Header */}
+                    <div className="mb-10 text-center">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium text-teal-300 mb-6">
+                            <Sparkles className="h-3.5 w-3.5"/>
+                            <span>Pika Monitor</span>
                         </div>
-
-                        <Form
-                            name="login"
-                            layout="vertical"
-                            size="large"
-                            onFinish={onFinish}
-                            autoComplete="off"
-                        >
-                            <Form.Item
-                                label="用户名"
-                                name="username"
-                                rules={[{required: true, message: '请输入用户名'}]}
-                            >
-                                <Input
-                                    prefix={<UserOutlined/>}
-                                    placeholder="请输入用户名"
-                                />
-                            </Form.Item>
-
-                            <Form.Item
-                                label="密码"
-                                name="password"
-                                rules={[{required: true, message: '请输入密码'}]}
-                            >
-                                <Input.Password
-                                    prefix={<LockOutlined/>}
-                                    placeholder="请输入密码"
-                                />
-                            </Form.Item>
-
-                            <Form.Item className="mb-0">
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    loading={loading}
-                                    block
-                                    size="large"
-                                    className="h-12 rounded-2xl text-base font-semibold"
-                                >
-                                    登录
-                                </Button>
-                            </Form.Item>
-                        </Form>
-
-                        {(oidcEnabled || githubEnabled) && (
-                            <div className="mt-8">
-                                <Divider plain className="text-xs text-slate-400">其他登录方式</Divider>
-                                <div className="mt-4 space-y-3">
-                                    {githubEnabled && (
-                                        <Button
-                                            block
-                                            loading={githubLoading}
-                                            icon={<GithubOutlined/>}
-                                            onClick={handleGitHubLogin}
-                                            size="large"
-                                            className="h-12 rounded-2xl border-slate-200 text-slate-800 hover:border-slate-300"
-                                        >
-                                            GitHub 登录
-                                        </Button>
-                                    )}
-                                    {oidcEnabled && (
-                                        <Button
-                                            block
-                                            loading={oidcLoading}
-                                            onClick={handleOIDCLogin}
-                                            size="large"
-                                            className="h-12 rounded-2xl border-slate-200 text-slate-800 hover:border-slate-300"
-                                        >
-                                            OIDC 登录
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        <p className="mt-8 text-center text-xs text-slate-400">
-                            登录即表示同意平台安全策略
-                        </p>
+                        <h1 className="text-3xl font-bold text-white tracking-tight">欢迎回来</h1>
+                        <p className="mt-3 text-sm text-slate-400">登录以管理您的监控探针</p>
                     </div>
+
+                    <Form
+                        name="login"
+                        layout="vertical"
+                        size="large"
+                        onFinish={onFinish}
+                        autoComplete="off"
+                        requiredMark={false}
+                    >
+                        <Form.Item
+                            label={<span className="text-slate-300">用户名</span>}
+                            name="username"
+                            rules={[{required: true, message: '请输入用户名'}]}
+                        >
+                            <Input
+                                prefix={<UserOutlined className="text-slate-500"/>}
+                                placeholder="请输入用户名"
+                                className="!bg-slate-950/50 !border-white/10 !text-white placeholder:!text-slate-600 hover:!border-teal-500/50 focus:!border-teal-500"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label={<span className="text-slate-300">密码</span>}
+                            name="password"
+                            rules={[{required: true, message: '请输入密码'}]}
+                        >
+                            <Input.Password
+                                prefix={<LockOutlined className="text-slate-500"/>}
+                                placeholder="请输入密码"
+                                className="!bg-slate-950/50 !border-white/10 !text-white placeholder:!text-slate-600 hover:!border-teal-500/50 focus:!border-teal-500"
+                            />
+                        </Form.Item>
+
+                        <Form.Item className="mb-0 pt-2">
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                loading={loading}
+                                block
+                                size="large"
+                                className="!h-12 !rounded-xl !bg-gradient-to-r !from-teal-500 !to-emerald-600 !text-white !font-semibold hover:!from-teal-400 hover:!to-emerald-500 border-none shadow-lg shadow-teal-500/20"
+                            >
+                                登录
+                            </Button>
+                        </Form.Item>
+                    </Form>
+
+                    {(oidcEnabled || githubEnabled) && (
+                        <div className="mt-8">
+                            <Divider plain className="!text-xs !text-slate-500 !border-white/10">其他登录方式</Divider>
+                            <div className="mt-6 space-y-3">
+                                {githubEnabled && (
+                                    <Button
+                                        block
+                                        loading={githubLoading}
+                                        icon={<GithubOutlined/>}
+                                        onClick={handleGitHubLogin}
+                                        size="large"
+                                        className="!h-12 !rounded-xl !bg-white/5 !border-white/10 !text-slate-300 hover:!bg-white/10 hover:!text-white hover:!border-white/20"
+                                    >
+                                        GitHub 登录
+                                    </Button>
+                                )}
+                                {oidcEnabled && (
+                                    <Button
+                                        block
+                                        loading={oidcLoading}
+                                        onClick={handleOIDCLogin}
+                                        size="large"
+                                        className="!h-12 !rounded-xl !bg-white/5 !border-white/10 !text-slate-300 hover:!bg-white/10 hover:!text-white hover:!border-white/20"
+                                    >
+                                        OIDC 登录
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
+                <p className="mt-8 text-center text-xs text-slate-500">
+                    © 2024 Pika Monitor. All rights reserved.
+                </p>
             </div>
         </div>
     );

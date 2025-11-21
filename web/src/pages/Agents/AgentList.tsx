@@ -208,25 +208,33 @@ const AgentList = () => {
                 ]}
             />
 
-            <Divider/>
+            <Divider className="border-white/5" />
 
             {/* 探针列表 */}
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl overflow-hidden">
                 <ProTable<Agent>
                     actionRef={actionRef}
                     rowKey="id"
                     search={{
                         labelWidth: 80,
                         filterType: 'light',
+                        className: "!bg-transparent !p-4"
                     }}
                     columns={columns}
                     scroll={{x: 'max-content'}}
                     pagination={{
                         defaultPageSize: 10,
                         showSizeChanger: true,
+                        className: "!px-6 !py-4"
                     }}
                     options={false}
                     tableAlertRender={false}
+                    className="bg-transparent"
+                    tableStyle={{ background: 'transparent' }}
+                    cardProps={{
+                        bodyStyle: { padding: 0 },
+                        className: '!bg-transparent'
+                    }}
                     request={async (params) => {
                         const {current = 1, pageSize = 10, hostname, ip, status} = params;
                         try {
