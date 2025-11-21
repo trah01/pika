@@ -96,7 +96,7 @@ const AlertSettings = () => {
         <div>
             <Form form={form}>
                 <Space direction="vertical" className="w-full">
-                    <Card title="基本信息" bordered={false} className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl">
+                    <Card title="基本信息" bordered={false} className="rounded-xl border border-white/5 bg-zinc-900/30 backdrop-blur-xl">
                         <Form.Item label="启用告警" name="enabled" valuePropName="checked">
                             <Switch checkedChildren="开启" unCheckedChildren="关闭"/>
                         </Form.Item>
@@ -109,7 +109,7 @@ const AlertSettings = () => {
                         {key: 'memory', title: '内存告警规则', thresholdLabel: '内存使用率阈值 (%)'},
                         {key: 'disk', title: '磁盘告警规则', thresholdLabel: '磁盘使用率阈值 (%)'},
                     ].map((rule) => (
-                        <Card key={rule.key} title={rule.title} bordered={false} className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl">
+                        <Card key={rule.key} title={rule.title} bordered={false} className="rounded-xl border border-white/5 bg-zinc-900/30 backdrop-blur-xl">
                             <Form.Item noStyle shouldUpdate>
                                 {({getFieldValue}) => {
                                     const enabled = getFieldValue(['rules', `${rule.key}Enabled`]);

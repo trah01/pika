@@ -70,8 +70,8 @@ const AgentList = () => {
             fixed: 'left',
             render: (_, record) => (
                 <div className="space-y-1">
-                    <div className="font-medium">{record.name || record.hostname}</div>
-                    <Tag color="teal" bordered={false}>{record.os} · {record.arch}</Tag>
+                    <div className="font-medium text-zinc-200">{record.name || record.hostname}</div>
+                    <Tag color="cyan" bordered={false} className="bg-cyan-500/10 text-cyan-400 border-0">{record.os} · {record.arch}</Tag>
                 </div>
             ),
         },
@@ -211,7 +211,7 @@ const AgentList = () => {
             <Divider className="border-white/5" />
 
             {/* 探针列表 */}
-            <div className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl overflow-hidden">
+            <div className="rounded-xl border border-white/5 bg-zinc-900/30 backdrop-blur-xl overflow-hidden">
                 <ProTable<Agent>
                     actionRef={actionRef}
                     rowKey="id"

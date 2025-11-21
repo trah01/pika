@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useQuery} from '@tanstack/react-query';
-import {AlertCircle, CheckCircle2, Clock, Loader2, Shield} from 'lucide-react';
+import {AlertCircle, CheckCircle2, Clock, Loader2, Shield, Activity, ExternalLink} from 'lucide-react';
 import {getPublicMonitors} from '../../api/monitor';
 import type {PublicMonitor} from '../../types';
 import PublicHeader from '../../components/PublicHeader';
@@ -18,69 +18,158 @@ const formatTime = (ms: number): string => {
 const formatDate = (timestamp: number): string => {
     if (!timestamp) return '-';
     const date = new Date(timestamp);
-    return date.toLocaleDateString('zh-CN', {
+    return date.toLocaleDateString('en-US', {
         year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
+        month: 'short',
+        day: 'numeric'
     });
 };
 
-const formatPercentValue = (value: number): string => (Number.isFinite(value) ? value.toFixed(2) : '0.00');
-
-const LoadingSpinner = () => (
-    <div className="flex min-h-[400px] w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-slate-600">
-            <Loader2 className="h-8 w-8 animate-spin"/>
-            <span className="text-sm">加载监控数据中...</span>
-        </div>
-    </div>
-);
-
 const StatusBadge = ({status}: { status: string }) => {
-    let containerClass = 'bg-slate-100 text-slate-600';
-    let label = '未知';
-    let icon = <Clock className="h-3.5 w-3.5"/>;
-
     if (status === 'up') {
-        containerClass = 'bg-emerald-50 text-emerald-700';
-        label = '正常';
-        icon = <CheckCircle2 className="h-3.5 w-3.5"/>;
-    } else if (status === 'down') {
-        containerClass = 'bg-red-50 text-red-700';
-        label = '异常';
-        icon = <AlertCircle className="h-3.5 w-3.5"/>;
+        return (
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] font-medium tracking-wide uppercase">Operational</span>
+            </div>
+        );
+    } 
+    
+    if (status === 'down') {
+        return (
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                <span className="text-[11px] font-medium tracking-wide uppercase">Downtime</span>
+            </div>
+        );
     }
 
     return (
-        <div
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${containerClass}`}>
-            {icon}
-            {label}
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-500/10 border border-zinc-500/20 text-zinc-400">
+            <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+            <span className="text-[11px] font-medium tracking-wide uppercase">Unknown</span>
         </div>
     );
 };
 
 const UptimeBar = ({uptime}: { uptime: number }) => {
     const percentage = Math.min(Math.max(uptime, 0), 100);
-    const colorClass = percentage >= 99 ? 'bg-emerald-500' : percentage >= 95 ? 'bg-yellow-500' : 'bg-red-500';
+    const colorClass = percentage >= 99 ? 'bg-emerald-500' : percentage >= 95 ? 'bg-amber-500' : 'bg-rose-500';
 
     return (
-        <div className="relative h-2 w-full overflow-hidden rounded-lg bg-slate-100">
+        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-zinc-800/50">
             <div
-                className={`absolute inset-y-0 left-0 ${colorClass} transition-all duration-500`}
+                className={`absolute inset-y-0 left-0 ${colorClass} transition-all duration-500 rounded-full`}
                 style={{width: `${percentage}%`}}
             />
         </div>
     );
 };
 
-const EmptyState = () => (
-    <div className="flex min-h-[400px] flex-col items-center justify-center text-slate-500">
-        <Shield className="mb-4 h-16 w-16 opacity-20"/>
-        <p className="text-lg font-medium">暂无监控数据</p>
-        <p className="mt-2 text-sm">请先在管理后台添加监控任务</p>
-    </div>
-);
+const MonitorCard = ({ stats, onClick }: { stats: PublicMonitor, onClick: () => void }) => {
+    const hasCert = stats.certExpiryDate > 0;
+    const certExpiringSoon = hasCert && stats.certExpiryDays < 30;
+
+    return (
+        <div 
+            onClick={onClick}
+            className="group relative flex flex-col gap-4 p-5 rounded-2xl bg-zinc-900/40 border border-white/5 hover:border-teal-500/30 hover:bg-zinc-900/60 transition-all duration-300 cursor-pointer backdrop-blur-sm"
+        >
+            <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/5 flex items-center justify-center text-teal-500 shadow-inner group-hover:text-teal-400 group-hover:border-teal-500/20 transition-colors">
+                        <Activity size={20} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-zinc-100 text-sm group-hover:text-teal-400 transition-colors">
+                            {stats.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1 text-[11px] text-zinc-500">
+                            <span className="truncate max-w-[150px]">{stats.showTargetPublic ? stats.target : 'Target Hidden'}</span>
+                            {stats.agentCount > 1 && (
+                                <>
+                                    <span>•</span>
+                                    <span>{stats.agentCount} Nodes</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <StatusBadge status={stats.lastCheckStatus} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-2">
+                <div className="p-3 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">Response Time</span>
+                    <div className="flex items-end gap-1.5">
+                        <span className="text-lg font-bold text-zinc-200">{formatTime(stats.currentResponse)}</span>
+                        <span className="text-[10px] text-zinc-500 mb-1">avg {formatTime(stats.avgResponse24h)}</span>
+                    </div>
+                </div>
+                
+                {hasCert ? (
+                    <div className={`p-3 rounded-xl border flex flex-col gap-1 ${certExpiringSoon ? 'bg-amber-500/10 border-amber-500/20' : 'bg-white/5 border-white/5'}`}>
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium flex items-center gap-1">
+                            <Shield size={10} /> SSL Certificate
+                        </span>
+                        <div className="flex items-end gap-1.5">
+                            <span className={`text-sm font-bold ${certExpiringSoon ? 'text-amber-400' : 'text-zinc-200'}`}>
+                                {stats.certExpiryDays} days
+                            </span>
+                            <span className="text-[10px] text-zinc-500 mb-0.5">remaining</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/5 flex flex-col gap-1">
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">Uptime (24h)</span>
+                        <span className="text-lg font-bold text-zinc-200">{stats.uptime24h.toFixed(2)}%</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="space-y-3 pt-2">
+                <div className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] text-zinc-400">
+                        <span>24h Uptime</span>
+                        <span className="text-zinc-200">{stats.uptime24h.toFixed(3)}%</span>
+                    </div>
+                    <UptimeBar uptime={stats.uptime24h} />
+                </div>
+                <div className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] text-zinc-400">
+                        <span>30d Uptime</span>
+                        <span className="text-zinc-200">{stats.uptime30d.toFixed(3)}%</span>
+                    </div>
+                    <UptimeBar uptime={stats.uptime30d} />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const StatsOverview = ({ monitors }: { monitors: PublicMonitor[] }) => {
+    const total = monitors.length;
+    const up = monitors.filter(m => m.lastCheckStatus === 'up').length;
+    const down = monitors.filter(m => m.lastCheckStatus === 'down').length;
+    const avgUptime = total > 0 ? monitors.reduce((acc, curr) => acc + curr.uptime24h, 0) / total : 0;
+
+    return (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {[
+                { label: 'Total Monitors', value: total, sub: 'Active Checks', color: 'text-zinc-100' },
+                { label: 'Operational', value: up, sub: 'Systems Normal', color: 'text-emerald-400' },
+                { label: 'Incidents', value: down, sub: 'Current Issues', color: down > 0 ? 'text-rose-400' : 'text-zinc-400' },
+                { label: 'Avg Uptime (24h)', value: `${avgUptime.toFixed(2)}%`, sub: 'Global Availability', color: 'text-teal-400' },
+            ].map((stat, i) => (
+                <div key={i} className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur-sm">
+                    <div className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-1">{stat.label}</div>
+                    <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+                    <div className="text-[10px] text-zinc-600 mt-1">{stat.sub}</div>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const MonitorList = () => {
     const navigate = useNavigate();
@@ -92,388 +181,57 @@ const MonitorList = () => {
             const response = await getPublicMonitors();
             return response.data || [];
         },
-        refetchInterval: 30000, // 30秒刷新一次
+        refetchInterval: 30000,
     });
-
-    const monitorSummaries = monitors;
-
-    const lastUpdatedDisplay =
-        dataUpdatedAt && dataUpdatedAt > 0
-            ? new Date(dataUpdatedAt).toLocaleTimeString('zh-CN', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-            })
-            : '尚未刷新';
-
-    const renderGridView = () => (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {monitorSummaries.map((stats) => {
-                const hasCert = stats.certExpiryDate > 0;
-                const certExpiringSoon = hasCert && stats.certExpiryDays < 30;
-
-                return (
-                    <div
-                        key={stats.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => navigate(`/monitors/${encodeURIComponent(stats.id)}`)}
-                        onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                                event.preventDefault();
-                                navigate(`/monitors/${encodeURIComponent(stats.id)}`);
-                            }
-                        }}
-                        className="group relative flex h-full cursor-pointer flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition duration-200 hover:border-teal-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300"
-                    >
-                        <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <h3 className="text-base font-semibold text-slate-900 truncate">
-                                        {stats.name}
-                                    </h3>
-                                    <StatusBadge status={stats.lastCheckStatus}/>
-                                </div>
-                                <p className="mt-1 text-sm text-slate-500 truncate" title={stats.showTargetPublic ? stats.target : '已隐藏'}>
-                                    {stats.showTargetPublic ? stats.target : '***'}
-                                </p>
-                                {stats.agentCount > 1 && (
-                                    <p className="mt-1 text-xs text-slate-400">
-                                        {stats.agentCount} 个探针
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div
-                                className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
-                                <div className="flex items-center gap-2">
-                                    <div
-                                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-teal-600">
-                                        <Clock className="h-3.5 w-3.5"/>
-                                    </div>
-                                    <span className="text-xs font-medium text-slate-600">当前响应</span>
-                                </div>
-                                <span className="text-sm font-bold text-slate-900">
-                                    {formatTime(stats.currentResponse)}
-                                </span>
-                            </div>
-
-                            <div
-                                className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
-                                <div className="flex items-center gap-2">
-                                    <div
-                                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-teal-600">
-                                        <Clock className="h-3.5 w-3.5"/>
-                                    </div>
-                                    <span className="text-xs font-medium text-slate-600">24h 平均</span>
-                                </div>
-                                <span className="text-sm font-bold text-slate-900">
-                                    {formatTime(stats.avgResponse24h)}
-                                </span>
-                            </div>
-
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between text-xs">
-                                    <span className="font-medium text-slate-600">24h 在线率</span>
-                                    <span
-                                        className="font-semibold text-slate-900">{formatPercentValue(stats.uptime24h)}%</span>
-                                </div>
-                                <UptimeBar uptime={stats.uptime24h}/>
-                            </div>
-
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between text-xs">
-                                    <span className="font-medium text-slate-600">30d 在线率</span>
-                                    <span
-                                        className="font-semibold text-slate-900">{formatPercentValue(stats.uptime30d)}%</span>
-                                </div>
-                                <UptimeBar uptime={stats.uptime30d}/>
-                            </div>
-
-                            {hasCert && (
-                                <div
-                                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
-                                    <div className="flex items-center gap-2">
-                                        <Shield
-                                            className={`h-4 w-4 ${certExpiringSoon ? 'text-yellow-600' : 'text-teal-600'}`}/>
-                                        <span className="text-xs font-medium text-slate-600">证书到期</span>
-                                    </div>
-                                    <div className="text-right">
-                                        <div
-                                            className={`text-xs font-medium ${certExpiringSoon ? 'text-yellow-700' : 'text-slate-700'}`}>
-                                            {formatDate(stats.certExpiryDate)}
-                                        </div>
-                                        <div
-                                            className={`text-xs ${certExpiringSoon ? 'text-yellow-600' : 'text-slate-500'}`}>
-                                            剩余 {stats.certExpiryDays} 天
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-    );
-
-    const renderListView = () => (
-        <>
-            {/* 移动端：使用卡片式布局 */}
-            <div className="flex flex-col gap-4 lg:hidden">
-                {monitorSummaries.map((stats) => {
-                    const hasCert = stats.certExpiryDate > 0;
-                    const certExpiringSoon = hasCert && stats.certExpiryDays < 30;
-
-                    return (
-                        <div
-                            key={stats.id}
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => navigate(`/monitors/${encodeURIComponent(stats.id)}`)}
-                            onKeyDown={(event) => {
-                                if (event.key === 'Enter' || event.key === ' ') {
-                                    event.preventDefault();
-                                    navigate(`/monitors/${encodeURIComponent(stats.id)}`);
-                                }
-                            }}
-                            className="cursor-pointer rounded-xl border border-slate-200 bg-white p-4 transition hover:border-teal-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-300"
-                        >
-                            <div className="mb-3 flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-base font-semibold text-slate-900">
-                                            {stats.name}
-                                        </span>
-                                        <StatusBadge status={stats.lastCheckStatus}/>
-                                    </div>
-                                    <p className="mt-1 text-sm text-slate-500 break-all">
-                                        {stats.showTargetPublic ? stats.target : '***'}
-                                    </p>
-                                    {stats.agentCount > 1 && (
-                                        <p className="mt-1 text-xs text-slate-400">
-                                            {stats.agentCount} 个探针
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <div
-                                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                                    <span className="text-xs font-medium text-slate-600">当前响应</span>
-                                    <span
-                                        className="text-sm font-bold text-slate-900">{formatTime(stats.currentResponse)}</span>
-                                </div>
-                                <div
-                                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                                    <span className="text-xs font-medium text-slate-600">24h 平均响应</span>
-                                    <span
-                                        className="text-sm font-bold text-slate-900">{formatTime(stats.avgResponse24h)}</span>
-                                </div>
-                                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                                    <div className="mb-2 flex items-center justify-between">
-                                        <span className="text-xs font-medium text-slate-600">24h 在线率</span>
-                                        <span
-                                            className="text-xs font-bold text-slate-900">{formatPercentValue(stats.uptime24h)}%</span>
-                                    </div>
-                                    <UptimeBar uptime={stats.uptime24h}/>
-                                </div>
-                                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                                    <div className="mb-2 flex items-center justify-between">
-                                        <span className="text-xs font-medium text-slate-600">30d 在线率</span>
-                                        <span
-                                            className="text-xs font-bold text-slate-900">{formatPercentValue(stats.uptime30d)}%</span>
-                                    </div>
-                                    <UptimeBar uptime={stats.uptime30d}/>
-                                </div>
-                                {hasCert && (
-                                    <div
-                                        className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Shield
-                                                className={`h-4 w-4 ${certExpiringSoon ? 'text-yellow-600' : 'text-slate-600'}`}/>
-                                            <span className="text-xs font-medium text-slate-600">证书到期</span>
-                                        </div>
-                                        <div className="text-right">
-                                            <div
-                                                className={`text-xs font-medium ${certExpiringSoon ? 'text-yellow-700' : 'text-slate-700'}`}>
-                                                {formatDate(stats.certExpiryDate)}
-                                            </div>
-                                            <div
-                                                className={`text-xs ${certExpiringSoon ? 'text-yellow-600' : 'text-slate-500'}`}>
-                                                剩余 {stats.certExpiryDays} 天
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* 桌面端：使用表格布局 */}
-            <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white lg:block">
-                <table className="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead className="bg-teal-50">
-                    <tr className="text-left text-xs font-semibold uppercase tracking-wide text-teal-600">
-                        <th className="px-5 py-3">监控项</th>
-                        <th className="px-5 py-3">状态</th>
-                        <th className="px-5 py-3">当前响应</th>
-                        <th className="px-5 py-3">24h 平均响应</th>
-                        <th className="px-5 py-3">24h 在线率</th>
-                        <th className="px-5 py-3">30d 在线率</th>
-                        <th className="px-5 py-3">证书信息</th>
-                    </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 text-slate-700">
-                    {monitorSummaries.map((stats) => {
-                        const hasCert = stats.certExpiryDate > 0;
-                        const certExpiringSoon = hasCert && stats.certExpiryDays < 30;
-
-                        return (
-                            <tr
-                                key={stats.id}
-                                tabIndex={0}
-                                onClick={() => navigate(`/monitors/${encodeURIComponent(stats.id)}`)}
-                                onKeyDown={(event) => {
-                                    if (event.key === 'Enter' || event.key === ' ') {
-                                        event.preventDefault();
-                                        navigate(`/monitors/${encodeURIComponent(stats.id)}`);
-                                    }
-                                }}
-                                className="cursor-pointer transition hover:bg-teal-50 focus-within:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-200"
-                            >
-                                <td className="px-5 py-4 align-center">
-                                    <div>
-                                        <div className="font-semibold text-slate-900">
-                                            {stats.name}
-                                        </div>
-                                        <div className="mt-1 text-xs text-slate-500 break-all">
-                                            {stats.showTargetPublic ? stats.target : '***'}
-                                        </div>
-                                        {stats.agentCount > 1 && (
-                                            <div className="mt-1 text-xs text-slate-400">
-                                                {stats.agentCount} 个探针
-                                            </div>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="px-5 py-4 align-center">
-                                    <StatusBadge status={stats.lastCheckStatus}/>
-                                </td>
-                                <td className="px-5 py-4 align-center">
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="h-4 w-4 text-slate-400"/>
-                                        <span className="text-sm font-semibold text-slate-900">
-                                                {formatTime(stats.currentResponse)}
-                                            </span>
-                                    </div>
-                                </td>
-                                <td className="px-5 py-4 align-center">
-                                        <span className="text-sm font-medium text-slate-700">
-                                            {formatTime(stats.avgResponse24h)}
-                                        </span>
-                                </td>
-                                <td className="px-5 py-4 align-center">
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-24">
-                                                <UptimeBar uptime={stats.uptime24h}/>
-                                            </div>
-                                            <span className="text-xs font-semibold text-slate-900 w-14 text-right">
-                                                    {formatPercentValue(stats.uptime24h)}%
-                                                </span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-5 py-4 align-center">
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-24">
-                                                <UptimeBar uptime={stats.uptime30d}/>
-                                            </div>
-                                            <span className="text-xs font-semibold text-slate-900 w-14 text-right">
-                                                    {formatPercentValue(stats.uptime30d)}%
-                                                </span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-5 py-4 align-center">
-                                    {hasCert ? (
-                                        <div className="flex items-center gap-2">
-                                            <Shield
-                                                className={`h-4 w-4 ${certExpiringSoon ? 'text-yellow-600' : 'text-slate-400'}`}/>
-                                            <div className="text-xs">
-                                                <div
-                                                    className={certExpiringSoon ? 'font-medium text-yellow-700' : 'font-medium text-slate-700'}>
-                                                    {formatDate(stats.certExpiryDate)}
-                                                </div>
-                                                <div
-                                                    className={`${certExpiringSoon ? 'text-yellow-600' : 'text-slate-500'}`}>
-                                                    剩余 {stats.certExpiryDays} 天
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <span className="text-sm text-slate-400">-</span>
-                                    )}
-                                </td>
-                            </tr>
-                        );
-                    })}
-                    </tbody>
-                </table>
-            </div>
-        </>
-    );
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-white text-slate-900 flex flex-col">
-                <PublicHeader
-                    title="服务监控"
-                    lastUpdated={lastUpdatedDisplay}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                    showViewToggle={true}
-                />
-                <main className="flex-1 bg-white">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-                        <LoadingSpinner/>
-                    </div>
-                </main>
-                <PublicFooter/>
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <Loader2 className="animate-spin text-teal-500" size={32} />
             </div>
         );
     }
 
+    const lastUpdated = dataUpdatedAt 
+        ? new Date(dataUpdatedAt).toLocaleTimeString('en-US', { hour12: false }) 
+        : '--:--:--';
+
     return (
-        <div className="min-h-screen bg-white text-slate-900 flex flex-col">
-            <PublicHeader
-                title="服务监控"
-                lastUpdated={lastUpdatedDisplay}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                showViewToggle={true}
-            />
+        <div className="min-h-screen bg-black text-zinc-200 font-sans selection:bg-teal-500/30">
+            <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black pointer-events-none" />
+            
+            <div className="relative z-10">
+                <PublicHeader
+                    title="Service Status"
+                    lastUpdated={lastUpdated}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    showViewToggle={true}
+                />
 
-            <main className="flex-1 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                    {monitorSummaries.length === 0 ? (
-                        <EmptyState/>
-                    ) : viewMode === 'grid' ? (
-                        renderGridView()
+                <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+                    <StatsOverview monitors={monitors} />
+
+                    {monitors.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-zinc-500 border border-dashed border-zinc-800 rounded-3xl">
+                            <Activity size={48} className="mb-4 opacity-20" />
+                            <p>No monitors configured</p>
+                        </div>
                     ) : (
-                        renderListView()
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {monitors.map(monitor => (
+                                <MonitorCard 
+                                    key={monitor.id} 
+                                    stats={monitor} 
+                                    onClick={() => navigate(`/monitors/${encodeURIComponent(monitor.id)}`)} 
+                                />
+                            ))}
+                        </div>
                     )}
-                </div>
-            </main>
+                </main>
 
-            <PublicFooter/>
+                <PublicFooter/>
+            </div>
         </div>
     );
 };

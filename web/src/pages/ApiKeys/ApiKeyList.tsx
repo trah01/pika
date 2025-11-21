@@ -126,7 +126,7 @@ const ApiKeyList = () => {
             title: '名称',
             dataIndex: 'name',
             key: 'name',
-            render: (text) => <span className="font-medium text-slate-200">{text}</span>,
+            render: (text) => <span className="font-medium text-zinc-200">{text}</span>,
         },
         {
             title: 'API密钥',
@@ -176,7 +176,7 @@ const ApiKeyList = () => {
             key: 'createdAt',
             hideInSearch: true,
             render: (value: number) => (
-                <span className="text-slate-400">{dayjs(value).format('YYYY-MM-DD HH:mm')}</span>
+                <span className="text-zinc-400">{dayjs(value).format('YYYY-MM-DD HH:mm')}</span>
             ),
             width: 180,
         },
@@ -186,7 +186,7 @@ const ApiKeyList = () => {
             key: 'updatedAt',
             hideInSearch: true,
             render: (value: number) => (
-                <span className="text-slate-400">{dayjs(value).format('YYYY-MM-DD HH:mm')}</span>
+                <span className="text-zinc-400">{dayjs(value).format('YYYY-MM-DD HH:mm')}</span>
             ),
             width: 180,
         },
@@ -262,7 +262,7 @@ const ApiKeyList = () => {
             <Divider className="border-white/5" />
 
             {/* API密钥列表 */}
-            <div className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl overflow-hidden">
+            <div className="rounded-xl border border-white/5 bg-zinc-900/30 backdrop-blur-xl overflow-hidden">
             <ProTable<ApiKey>
 
                 actionRef={actionRef}
@@ -375,11 +375,11 @@ const ApiKeyList = () => {
                         </p>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">密钥名称</label>
-                        <div className="text-base font-semibold text-slate-200">{newApiKeyData?.name}</div>
+                        <label className="block text-sm font-medium text-zinc-300 mb-2">密钥名称</label>
+                        <div className="text-base font-semibold text-zinc-200">{newApiKeyData?.name}</div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">API密钥</label>
+                        <label className="block text-sm font-medium text-zinc-300 mb-2">API密钥</label>
                         <code
                             className="block w-full bg-white/10 border border-white/10 rounded px-3 py-2 text-sm font-mono break-all">
                             {newApiKeyData?.key}

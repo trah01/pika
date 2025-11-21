@@ -78,13 +78,13 @@ const Login = () => {
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
             {/* Background Effects */}
-            <div className="absolute inset-0 bg-slate-950">
+            <div className="absolute inset-0 bg-black">
                 <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-teal-500/10 rounded-full blur-[120px]" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px]" />
             </div>
 
             <div className="relative w-full max-w-md px-4">
-                <div className="relative rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-xl p-8 shadow-2xl shadow-black/50 sm:p-10">
+                <div className="relative rounded-3xl border border-white/10 bg-zinc-900/50 backdrop-blur-xl p-8 shadow-2xl shadow-black/50 sm:p-10">
                     
                     {/* Header */}
                     <div className="mb-10 text-center">
@@ -93,7 +93,7 @@ const Login = () => {
                             <span>Pika Monitor</span>
                         </div>
                         <h1 className="text-3xl font-bold text-white tracking-tight">欢迎回来</h1>
-                        <p className="mt-3 text-sm text-slate-400">登录以管理您的监控探针</p>
+                        <p className="mt-3 text-sm text-zinc-400">登录以管理您的监控探针</p>
                     </div>
 
                     <Form
@@ -105,26 +105,26 @@ const Login = () => {
                         requiredMark={false}
                     >
                         <Form.Item
-                            label={<span className="text-slate-300">用户名</span>}
+                            label={<span className="text-zinc-300">用户名</span>}
                             name="username"
                             rules={[{required: true, message: '请输入用户名'}]}
                         >
                             <Input
-                                prefix={<UserOutlined className="text-slate-500"/>}
+                                prefix={<UserOutlined className="text-zinc-500"/>}
                                 placeholder="请输入用户名"
-                                className="!bg-slate-950/50 !border-white/10 !text-white placeholder:!text-slate-600 hover:!border-teal-500/50 focus:!border-teal-500"
+                                className="!bg-black/50 !border-white/10 !text-white placeholder:!text-zinc-600 hover:!border-teal-500/50 focus:!border-teal-500"
                             />
                         </Form.Item>
 
                         <Form.Item
-                            label={<span className="text-slate-300">密码</span>}
+                            label={<span className="text-zinc-300">密码</span>}
                             name="password"
                             rules={[{required: true, message: '请输入密码'}]}
                         >
                             <Input.Password
-                                prefix={<LockOutlined className="text-slate-500"/>}
+                                prefix={<LockOutlined className="text-zinc-500"/>}
                                 placeholder="请输入密码"
-                                className="!bg-slate-950/50 !border-white/10 !text-white placeholder:!text-slate-600 hover:!border-teal-500/50 focus:!border-teal-500"
+                                className="!bg-black/50 !border-white/10 !text-white placeholder:!text-zinc-600 hover:!border-teal-500/50 focus:!border-teal-500"
                             />
                         </Form.Item>
 
@@ -144,7 +144,7 @@ const Login = () => {
 
                     {(oidcEnabled || githubEnabled) && (
                         <div className="mt-8">
-                            <Divider plain className="!text-xs !text-slate-500 !border-white/10">其他登录方式</Divider>
+                            <Divider plain className="!text-xs !text-zinc-500 !border-white/10">其他登录方式</Divider>
                             <div className="mt-6 space-y-3">
                                 {githubEnabled && (
                                     <Button
@@ -153,7 +153,7 @@ const Login = () => {
                                         icon={<GithubOutlined/>}
                                         onClick={handleGitHubLogin}
                                         size="large"
-                                        className="!h-12 !rounded-xl !bg-white/5 !border-white/10 !text-slate-300 hover:!bg-white/10 hover:!text-white hover:!border-white/20"
+                                        className="!h-12 !rounded-xl !bg-white/5 !border-white/10 !text-zinc-300 hover:!bg-white/10 hover:!text-white hover:!border-white/20"
                                     >
                                         GitHub 登录
                                     </Button>
@@ -164,7 +164,7 @@ const Login = () => {
                                         loading={oidcLoading}
                                         onClick={handleOIDCLogin}
                                         size="large"
-                                        className="!h-12 !rounded-xl !bg-white/5 !border-white/10 !text-slate-300 hover:!bg-white/10 hover:!text-white hover:!border-white/20"
+                                        className="!h-12 !rounded-xl !bg-white/5 !border-white/10 !text-zinc-300 hover:!bg-white/10 hover:!text-white hover:!border-white/20"
                                     >
                                         OIDC 登录
                                     </Button>
@@ -173,7 +173,7 @@ const Login = () => {
                         </div>
                     )}
                 </div>
-                <p className="mt-8 text-center text-xs text-slate-500">
+                <p className="mt-8 text-center text-xs text-zinc-500">
                     © 2024 Pika Monitor. All rights reserved.
                 </p>
             </div>

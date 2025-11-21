@@ -198,9 +198,9 @@ const MonitorList = () => {
             dataIndex: 'name',
             render: (_, record) => (
                 <div className="flex flex-col">
-                    <span className="font-medium text-slate-200">{record.name}</span>
+                    <span className="font-medium text-zinc-200">{record.name}</span>
                     {record.description ? (
-                        <span className="text-xs text-slate-400">{record.description}</span>
+                        <span className="text-xs text-zinc-400">{record.description}</span>
                     ) : null}
                 </div>
             ),
@@ -302,7 +302,7 @@ const MonitorList = () => {
 
             <Divider className="border-white/5" />
 
-            <div className="rounded-xl border border-white/5 bg-slate-900/30 backdrop-blur-xl overflow-hidden">
+            <div className="rounded-xl border border-white/5 bg-zinc-900/30 backdrop-blur-xl overflow-hidden">
                 <ProTable<MonitorTask>
                     columns={columns}
                     rowKey="id"
