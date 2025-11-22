@@ -1,3 +1,5 @@
+//go:build linux
+
 package tamper
 
 import (
@@ -77,7 +79,6 @@ func SetAttr(f *os.File, attr int32) error {
 	}
 	attrs |= attr
 	return ioctl(f, FS_IOC_SETFLAGS, &attrs)
-
 }
 
 /*
@@ -88,7 +89,7 @@ func UnsetAttr(f *os.File, attr int32) error {
 	if err != nil {
 		return err
 	}
-	attrs ^= attrs & attr
+	attrs &= ^attr
 	return ioctl(f, FS_IOC_SETFLAGS, &attrs)
 }
 
@@ -100,9 +101,5 @@ func IsAttr(f *os.File, attr int32) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if (attrs & attr) != 0 {
-		return true, nil
-	} else {
-		return false, nil
-	}
+	return (attrs & attr) != 0, nil
 }
