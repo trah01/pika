@@ -53,6 +53,10 @@ func (n *Notifier) buildMessage(agent *models.Agent, record *models.AlertRecord)
 		alertTypeName = "磁盘告警"
 	case "network":
 		alertTypeName = "网络断开告警"
+	case "cert":
+		alertTypeName = "证书告警"
+	case "service":
+		alertTypeName = "服务告警"
 	}
 
 	if record.Status == "firing" {
@@ -159,7 +163,7 @@ func (n *Notifier) sendWeCom(ctx context.Context, webhook, message string) error
 		return err
 	}
 	if weComResult.Errcode != 0 {
-		return fmt.Errorf(weComResult.Errmsg)
+		return fmt.Errorf("%s", weComResult.Errmsg)
 	}
 	return nil
 }

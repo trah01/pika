@@ -707,3 +707,62 @@ func (r *MetricRepo) DeleteAgentMetrics(ctx context.Context, agentID string) err
 
 	return tx.Commit().Error
 }
+
+// GetLatestMonitorMetricsByType 获取指定类型的最新监控指标（所有探针）
+func (r *MetricRepo) GetLatestMonitorMetricsByType(ctx context.Context, monitorType string) ([]*models.MonitorMetric, error) {
+	var metrics []*models.MonitorMetric
+
+	// 获取所有符合类型的监控项
+	var monitorIDs []string
+	err := r.db.WithContext(ctx).
+		Model(&models.MonitorMetric{}).
+		Where("type = ?", monitorType).
+		Distinct("monitor_id").
+		Pluck("monitor_id", &monitorIDs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 对每个监控项获取最新的一条记录
+	for _, monitorID := range monitorIDs {
+		var metric models.MonitorMetric
+		err := r.db.WithContext(ctx).
+			Where("monitor_id = ? AND type = ?", monitorID, monitorType).
+			Order("timestamp DESC").
+			First(&metric).Error
+		if err == nil {
+			metrics = append(metrics, &metric)
+		}
+	}
+
+	return metrics, nil
+}
+
+// GetAllLatestMonitorMetrics 获取所有最新的监控指标（所有探针的所有监控项，每个监控项的最新一条）
+func (r *MetricRepo) GetAllLatestMonitorMetrics(ctx context.Context) ([]*models.MonitorMetric, error) {
+	var metrics []*models.MonitorMetric
+
+	// 获取所有监控项ID
+	var monitorIDs []string
+	err := r.db.WithContext(ctx).
+		Model(&models.MonitorMetric{}).
+		Distinct("monitor_id").
+		Pluck("monitor_id", &monitorIDs).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 对每个监控项获取最新的一条记录
+	for _, monitorID := range monitorIDs {
+		var metric models.MonitorMetric
+		err := r.db.WithContext(ctx).
+			Where("monitor_id = ?", monitorID).
+			Order("timestamp DESC").
+			First(&metric).Error
+		if err == nil {
+			metrics = append(metrics, &metric)
+		}
+	}
+
+	return metrics, nil
+}

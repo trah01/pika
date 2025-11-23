@@ -17,6 +17,7 @@ import (
 type AlertService struct {
 	alertRepo       *repo.AlertRepo
 	agentRepo       *repo.AgentRepo
+	metricRepo      *repo.MetricRepo
 	propertyService *PropertyService
 	notifier        *Notifier
 	logger          *zap.Logger
@@ -30,6 +31,7 @@ func NewAlertService(logger *zap.Logger, db *gorm.DB, propertyService *PropertyS
 	return &AlertService{
 		alertRepo:       repo.NewAlertRepo(db),
 		agentRepo:       repo.NewAgentRepo(db),
+		metricRepo:      repo.NewMetricRepo(db),
 		propertyService: propertyService,
 		notifier:        notifier,
 		logger:          logger,
@@ -297,6 +299,10 @@ func (s *AlertService) buildAlertMessage(state *models.AlertState) string {
 		alertTypeName = "磁盘使用率"
 	case "network":
 		alertTypeName = "网络连接"
+	case "cert":
+		return fmt.Sprintf("HTTPS证书剩余天数%.0f天，低于阈值%.0f天", state.Value, state.Threshold)
+	case "service":
+		return fmt.Sprintf("服务持续离线%d秒", state.Duration)
 	default:
 		alertTypeName = state.AlertType
 	}
@@ -320,4 +326,387 @@ func (s *AlertService) calculateLevel(value, threshold float64) string {
 	} else {
 		return "critical"
 	}
+}
+
+// CheckMonitorAlerts 检查监控相关告警（证书和服务下线）
+func (s *AlertService) CheckMonitorAlerts(ctx context.Context) error {
+	// 获取全局告警配置
+	globalConfigs, err := s.alertRepo.FindEnabledByAgentID(ctx, "global")
+	if err != nil {
+		s.logger.Error("获取全局告警配置失败", zap.Error(err))
+		return err
+	}
+
+	now := time.Now().UnixMilli()
+
+	// 检查每个配置的告警规则
+	for _, config := range globalConfigs {
+		// 检查证书告警
+		if config.Rules.CertEnabled {
+			if err := s.checkCertificateAlerts(ctx, &config, now); err != nil {
+				s.logger.Error("检查证书告警失败", zap.Error(err))
+			}
+		}
+
+		// 检查服务下线告警
+		if config.Rules.ServiceEnabled {
+			if err := s.checkServiceDownAlerts(ctx, &config, now); err != nil {
+				s.logger.Error("检查服务下线告警失败", zap.Error(err))
+			}
+		}
+	}
+
+	return nil
+}
+
+// checkCertificateAlerts 检查证书告警
+func (s *AlertService) checkCertificateAlerts(ctx context.Context, config *models.AlertConfig, now int64) error {
+	// 获取所有最新的监控指标（仅HTTPS类型）
+	// 这里需要查询最新的 monitor_metrics 记录，获取证书剩余天数
+	monitors, err := s.metricRepo.GetLatestMonitorMetricsByType(ctx, "http")
+	if err != nil {
+		return err
+	}
+
+	for _, monitor := range monitors {
+		// 如果证书不存在或已过期，跳过
+		if monitor.CertExpiryTime == 0 {
+			continue
+		}
+
+		certDaysLeft := float64(monitor.CertDaysLeft)
+
+		// 获取探针信息
+		agent, err := s.agentRepo.FindById(ctx, monitor.AgentId)
+		if err != nil {
+			s.logger.Error("获取探针信息失败", zap.String("agentId", monitor.AgentId), zap.Error(err))
+			continue
+		}
+
+		// 检查证书剩余天数是否低于阈值
+		if certDaysLeft <= config.Rules.CertThreshold && certDaysLeft >= 0 {
+			// 触发告警（证书告警不需要持续时间，直接触发）
+			s.checkCertAlert(ctx, config, &agent, monitor, certDaysLeft, now)
+		} else {
+			// 恢复告警（如果之前触发过）
+			s.resolveCertAlert(ctx, config, &agent, monitor, certDaysLeft)
+		}
+	}
+
+	return nil
+}
+
+// checkCertAlert 检查并触发证书告警
+func (s *AlertService) checkCertAlert(ctx context.Context, config *models.AlertConfig, agent *models.Agent, monitor *models.MonitorMetric, certDaysLeft float64, now int64) {
+	stateKey := fmt.Sprintf("%s:%s:cert:%s", config.AgentID, config.ID, monitor.MonitorId)
+
+	s.mu.Lock()
+	state, exists := s.states[stateKey]
+	if !exists {
+		state = &models.AlertState{
+			AgentID:   agent.ID,
+			ConfigID:  config.ID,
+			AlertType: "cert",
+			Threshold: config.Rules.CertThreshold,
+			Duration:  0, // 证书告警不需要持续时间
+		}
+		s.states[stateKey] = state
+	}
+	s.mu.Unlock()
+
+	state.Value = certDaysLeft
+	state.LastCheckTime = now
+
+	// 如果尚未触发告警，则触发
+	if !state.IsFiring {
+		s.logger.Info("触发证书告警",
+			zap.String("agentId", agent.ID),
+			zap.String("monitorId", monitor.MonitorId),
+			zap.String("target", monitor.Target),
+			zap.Float64("certDaysLeft", certDaysLeft),
+			zap.Float64("threshold", config.Rules.CertThreshold),
+		)
+
+		// 创建告警记录
+		record := &models.AlertRecord{
+			AgentID:     agent.ID,
+			ConfigID:    config.ID,
+			ConfigName:  config.Name,
+			AlertType:   "cert",
+			Message:     fmt.Sprintf("监控项 %s 的HTTPS证书剩余天数%.0f天，低于阈值%.0f天", monitor.Target, certDaysLeft, config.Rules.CertThreshold),
+			Threshold:   config.Rules.CertThreshold,
+			ActualValue: certDaysLeft,
+			Level:       s.calculateCertLevel(certDaysLeft),
+			Status:      "firing",
+			FiredAt:     now,
+			CreatedAt:   now,
+		}
+
+		err := s.alertRepo.CreateAlertRecord(ctx, record)
+		if err != nil {
+			s.logger.Error("创建证书告警记录失败", zap.Error(err))
+			return
+		}
+
+		state.IsFiring = true
+		state.LastRecordID = record.ID
+
+		// 发送通知
+		go func() {
+			channelConfigs, err := s.propertyService.GetNotificationChannelConfigs(context.Background())
+			if err != nil {
+				s.logger.Error("获取通知渠道配置失败", zap.Error(err))
+				return
+			}
+
+			var enabledChannels []models.NotificationChannelConfig
+			for _, channel := range channelConfigs {
+				if channel.Enabled {
+					enabledChannels = append(enabledChannels, channel)
+				}
+			}
+
+			if err := s.notifier.SendNotificationByConfigs(context.Background(), enabledChannels, record, agent); err != nil {
+				s.logger.Error("发送证书告警通知失败", zap.Error(err))
+			}
+		}()
+	}
+}
+
+// resolveCertAlert 恢复证书告警
+func (s *AlertService) resolveCertAlert(ctx context.Context, config *models.AlertConfig, agent *models.Agent, monitor *models.MonitorMetric, certDaysLeft float64) {
+	stateKey := fmt.Sprintf("%s:%s:cert:%s", config.AgentID, config.ID, monitor.MonitorId)
+
+	s.mu.RLock()
+	state, exists := s.states[stateKey]
+	s.mu.RUnlock()
+
+	if !exists || !state.IsFiring {
+		return
+	}
+
+	s.logger.Info("证书告警恢复",
+		zap.String("agentId", agent.ID),
+		zap.String("monitorId", monitor.MonitorId),
+		zap.String("target", monitor.Target),
+		zap.Float64("certDaysLeft", certDaysLeft),
+	)
+
+	// 更新告警记录状态
+	if state.LastRecordID > 0 {
+		existingRecord, err := s.alertRepo.GetLatestAlertRecord(ctx, config.ID, "cert")
+		if err == nil && existingRecord != nil {
+			existingRecord.Status = "resolved"
+			existingRecord.ActualValue = certDaysLeft
+			existingRecord.ResolvedAt = time.Now().UnixMilli()
+			existingRecord.UpdatedAt = time.Now().UnixMilli()
+
+			err = s.alertRepo.UpdateAlertRecord(ctx, existingRecord)
+			if err != nil {
+				s.logger.Error("更新证书告警记录失败", zap.Error(err))
+			} else {
+				// 发送恢复通知
+				go func() {
+					channelConfigs, err := s.propertyService.GetNotificationChannelConfigs(context.Background())
+					if err != nil {
+						s.logger.Error("获取通知渠道配置失败", zap.Error(err))
+						return
+					}
+
+					var enabledChannels []models.NotificationChannelConfig
+					for _, channel := range channelConfigs {
+						if channel.Enabled {
+							enabledChannels = append(enabledChannels, channel)
+						}
+					}
+
+					if err := s.notifier.SendNotificationByConfigs(context.Background(), enabledChannels, existingRecord, agent); err != nil {
+						s.logger.Error("发送证书恢复通知失败", zap.Error(err))
+					}
+				}()
+			}
+		}
+	}
+
+	state.IsFiring = false
+	state.LastRecordID = 0
+}
+
+// calculateCertLevel 计算证书告警级别
+func (s *AlertService) calculateCertLevel(daysLeft float64) string {
+	if daysLeft <= 7 {
+		return "critical"
+	} else if daysLeft <= 30 {
+		return "warning"
+	} else {
+		return "info"
+	}
+}
+
+// checkServiceDownAlerts 检查服务下线告警
+func (s *AlertService) checkServiceDownAlerts(ctx context.Context, config *models.AlertConfig, now int64) error {
+	// 获取所有最新的监控指标
+	monitors, err := s.metricRepo.GetAllLatestMonitorMetrics(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, monitor := range monitors {
+		// 获取探针信息
+		agent, err := s.agentRepo.FindById(ctx, monitor.AgentId)
+		if err != nil {
+			s.logger.Error("获取探针信息失败", zap.String("agentId", monitor.AgentId), zap.Error(err))
+			continue
+		}
+
+		stateKey := fmt.Sprintf("%s:%s:service:%s", config.AgentID, config.ID, monitor.MonitorId)
+
+		s.mu.Lock()
+		state, exists := s.states[stateKey]
+		if !exists {
+			state = &models.AlertState{
+				AgentID:   agent.ID,
+				ConfigID:  config.ID,
+				AlertType: "service",
+				Threshold: 0,
+				Duration:  config.Rules.ServiceDuration,
+			}
+			s.states[stateKey] = state
+		}
+		s.mu.Unlock()
+
+		state.LastCheckTime = now
+
+		// 检查服务状态
+		if monitor.Status == "down" {
+			// 服务离线
+			if state.StartTime == 0 {
+				// 首次检测到离线，记录开始时间
+				state.StartTime = monitor.Timestamp
+			}
+
+			// 计算已持续离线时间（秒）
+			elapsedSeconds := (now - state.StartTime) / 1000
+
+			// 判断是否达到持续时间要求
+			if elapsedSeconds >= int64(config.Rules.ServiceDuration) {
+				// 达到持续时间要求，触发告警
+				if !state.IsFiring {
+					s.fireServiceDownAlert(ctx, config, &agent, monitor, state, now)
+				}
+			}
+		} else {
+			// 服务在线
+			if state.IsFiring {
+				// 从告警状态变为恢复状态
+				s.resolveServiceDownAlert(ctx, config, &agent, monitor, state)
+			}
+
+			// 重置开始时间
+			state.StartTime = 0
+		}
+	}
+
+	return nil
+}
+
+// fireServiceDownAlert 触发服务下线告警
+func (s *AlertService) fireServiceDownAlert(ctx context.Context, config *models.AlertConfig, agent *models.Agent, monitor *models.MonitorMetric, state *models.AlertState, now int64) {
+	s.logger.Info("触发服务下线告警",
+		zap.String("agentId", agent.ID),
+		zap.String("monitorId", monitor.MonitorId),
+		zap.String("target", monitor.Target),
+		zap.Int("duration", state.Duration),
+	)
+
+	// 创建告警记录
+	record := &models.AlertRecord{
+		AgentID:     agent.ID,
+		ConfigID:    config.ID,
+		ConfigName:  config.Name,
+		AlertType:   "service",
+		Message:     fmt.Sprintf("监控项 %s 持续离线%d秒", monitor.Target, state.Duration),
+		Threshold:   0,
+		ActualValue: float64(state.Duration),
+		Level:       "critical",
+		Status:      "firing",
+		FiredAt:     now,
+		CreatedAt:   now,
+	}
+
+	err := s.alertRepo.CreateAlertRecord(ctx, record)
+	if err != nil {
+		s.logger.Error("创建服务下线告警记录失败", zap.Error(err))
+		return
+	}
+
+	state.IsFiring = true
+	state.LastRecordID = record.ID
+
+	// 发送通知
+	go func() {
+		channelConfigs, err := s.propertyService.GetNotificationChannelConfigs(context.Background())
+		if err != nil {
+			s.logger.Error("获取通知渠道配置失败", zap.Error(err))
+			return
+		}
+
+		var enabledChannels []models.NotificationChannelConfig
+		for _, channel := range channelConfigs {
+			if channel.Enabled {
+				enabledChannels = append(enabledChannels, channel)
+			}
+		}
+
+		if err := s.notifier.SendNotificationByConfigs(context.Background(), enabledChannels, record, agent); err != nil {
+			s.logger.Error("发送服务下线告警通知失败", zap.Error(err))
+		}
+	}()
+}
+
+// resolveServiceDownAlert 恢复服务下线告警
+func (s *AlertService) resolveServiceDownAlert(ctx context.Context, config *models.AlertConfig, agent *models.Agent, monitor *models.MonitorMetric, state *models.AlertState) {
+	s.logger.Info("服务下线告警恢复",
+		zap.String("agentId", agent.ID),
+		zap.String("monitorId", monitor.MonitorId),
+		zap.String("target", monitor.Target),
+	)
+
+	// 更新告警记录状态
+	if state.LastRecordID > 0 {
+		existingRecord, err := s.alertRepo.GetLatestAlertRecord(ctx, config.ID, "service")
+		if err == nil && existingRecord != nil {
+			existingRecord.Status = "resolved"
+			existingRecord.ResolvedAt = time.Now().UnixMilli()
+			existingRecord.UpdatedAt = time.Now().UnixMilli()
+
+			err = s.alertRepo.UpdateAlertRecord(ctx, existingRecord)
+			if err != nil {
+				s.logger.Error("更新服务下线告警记录失败", zap.Error(err))
+			} else {
+				// 发送恢复通知
+				go func() {
+					channelConfigs, err := s.propertyService.GetNotificationChannelConfigs(context.Background())
+					if err != nil {
+						s.logger.Error("获取通知渠道配置失败", zap.Error(err))
+						return
+					}
+
+					var enabledChannels []models.NotificationChannelConfig
+					for _, channel := range channelConfigs {
+						if channel.Enabled {
+							enabledChannels = append(enabledChannels, channel)
+						}
+					}
+
+					if err := s.notifier.SendNotificationByConfigs(context.Background(), enabledChannels, existingRecord, agent); err != nil {
+						s.logger.Error("发送服务恢复通知失败", zap.Error(err))
+					}
+				}()
+			}
+		}
+	}
+
+	state.IsFiring = false
+	state.LastRecordID = 0
 }

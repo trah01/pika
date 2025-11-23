@@ -1,23 +1,15 @@
 import {useEffect} from 'react';
-import {App, Button, Card, Form, InputNumber, Select, Space, Switch} from 'antd';
+import {App, Button, Card, Form, InputNumber, Space, Switch} from 'antd';
 import {Save} from 'lucide-react';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import type {AlertConfig} from '../../types';
 import {createAlertConfig, getAlertConfigsByAgent, updateAlertConfig} from '../../api/alert';
-import {getAgents} from '../../api/agent';
 import {getErrorMessage} from '../../lib/utils';
 
 const AlertSettings = () => {
     const [form] = Form.useForm();
     const {message: messageApi} = App.useApp();
     const queryClient = useQueryClient();
-
-    // 获取探针列表
-    const {data: agentsData} = useQuery({
-        queryKey: ['agents'],
-        queryFn: getAgents,
-    });
-    const agents = agentsData?.items || [];
 
     // 获取全局告警配置
     const {data: configsData, isLoading: configLoading} = useQuery({
@@ -50,6 +42,10 @@ const AlertSettings = () => {
                     diskDuration: 60,
                     networkEnabled: false,
                     networkDuration: 60,
+                    certEnabled: true,
+                    certThreshold: 30,
+                    serviceEnabled: true,
+                    serviceDuration: 300,
                 },
             });
         }
@@ -149,6 +145,72 @@ const AlertSettings = () => {
                             </Form.Item>
                         </Card>
                     ))}
+
+                    <Card title="HTTPS 证书告警规则" type="inner">
+                        <Form.Item noStyle shouldUpdate>
+                            {({getFieldValue}) => {
+                                const enabled = getFieldValue(['rules', 'certEnabled']);
+                                return (
+                                    <div className="flex items-center gap-8">
+                                        <Form.Item
+                                            label="开关"
+                                            name={['rules', 'certEnabled']}
+                                            valuePropName="checked"
+                                            className="mb-0"
+                                        >
+                                            <Switch/>
+                                        </Form.Item>
+                                        <Form.Item
+                                            label="证书剩余天数阈值（天）"
+                                            name={['rules', 'certThreshold']}
+                                            className="mb-0"
+                                            tooltip="当证书剩余天数低于此阈值时触发告警"
+                                        >
+                                            <InputNumber
+                                                min={1}
+                                                max={365}
+                                                style={{width: '100%'}}
+                                                disabled={!enabled}
+                                            />
+                                        </Form.Item>
+                                    </div>
+                                );
+                            }}
+                        </Form.Item>
+                    </Card>
+
+                    <Card title="服务下线告警规则" type="inner">
+                        <Form.Item noStyle shouldUpdate>
+                            {({getFieldValue}) => {
+                                const enabled = getFieldValue(['rules', 'serviceEnabled']);
+                                return (
+                                    <div className="flex items-center gap-8">
+                                        <Form.Item
+                                            label="开关"
+                                            name={['rules', 'serviceEnabled']}
+                                            valuePropName="checked"
+                                            className="mb-0"
+                                        >
+                                            <Switch/>
+                                        </Form.Item>
+                                        <Form.Item
+                                            label="持续时间（秒）"
+                                            name={['rules', 'serviceDuration']}
+                                            className="mb-0"
+                                            tooltip="服务持续离线多久后触发告警"
+                                        >
+                                            <InputNumber
+                                                min={1}
+                                                max={3600}
+                                                style={{width: '100%'}}
+                                                disabled={!enabled}
+                                            />
+                                        </Form.Item>
+                                    </div>
+                                );
+                            }}
+                        </Form.Item>
+                    </Card>
 
                     <div className="flex justify-end pt-4">
                         <Button

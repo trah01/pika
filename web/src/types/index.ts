@@ -407,6 +407,10 @@ export interface AlertRules {
     diskDuration: number;
     networkEnabled: boolean;
     networkDuration: number;
+    certEnabled: boolean;      // HTTPS 证书告警开关
+    certThreshold: number;     // 证书剩余天数阈值（天）
+    serviceEnabled: boolean;   // 服务下线告警开关
+    serviceDuration: number;   // 服务下线持续时间（秒）
 }
 
 export interface AlertConfig {

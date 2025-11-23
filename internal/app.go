@@ -357,6 +357,11 @@ func startMetricsMonitoring(ctx context.Context, components *AppComponents, logg
 					logger.Error("检查告警规则失败", zap.String("agentId", agent.ID), zap.Error(err))
 				}
 			}
+
+			// 检查监控相关告警（证书和服务下线）
+			if err := components.AlertService.CheckMonitorAlerts(ctx); err != nil {
+				logger.Error("检查监控告警失败", zap.Error(err))
+			}
 		}
 	}
 }

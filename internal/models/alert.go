@@ -33,6 +33,14 @@ type AlertRules struct {
 	// 网络断开告警配置
 	NetworkEnabled  bool `json:"networkEnabled"`  // 是否启用网络断开告警
 	NetworkDuration int  `json:"networkDuration"` // 持续时间（秒）
+
+	// HTTPS 证书告警配置
+	CertEnabled   bool    `json:"certEnabled"`   // 是否启用证书告警
+	CertThreshold float64 `json:"certThreshold"` // 证书剩余天数阈值
+
+	// 服务下线告警配置
+	ServiceEnabled  bool `json:"serviceEnabled"`  // 是否启用服务下线告警
+	ServiceDuration int  `json:"serviceDuration"` // 持续时间（秒）
 }
 
 func (AlertConfig) TableName() string {
