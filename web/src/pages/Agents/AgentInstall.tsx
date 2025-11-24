@@ -1,11 +1,12 @@
-import {type ReactElement, useEffect, useState} from 'react';
+import React, {type ReactElement, useEffect, useState} from 'react';
 import {Alert, App, Button, Card, Select, Space, Tabs, Typography} from 'antd';
-import {CopyIcon, Download} from 'lucide-react';
+import {CopyIcon} from 'lucide-react';
 import {listApiKeys} from '../../api/apiKey';
 import type {ApiKey} from '../../types';
 import linuxPng from '../../assets/os/linux.png';
 import applePng from '../../assets/os/apple.png';
 import windowsPng from '../../assets/os/win11.png';
+import {useNavigate} from "react-router-dom";
 
 const {Paragraph, Text} = Typography;
 const {TabPane} = Tabs;
@@ -23,6 +24,7 @@ const AgentInstall = () => {
 
     const {message} = App.useApp();
     const serverUrl = window.location.origin;
+    let navigate = useNavigate();
 
     // 加载API密钥列表
     useEffect(() => {
@@ -138,107 +140,105 @@ ${agentCmd} version`;
 
     return (
         <div className="space-y-6">
-            <Card
-                title={
-                    <Space>
-                        <Download size={20}/>
-                        <span className="font-semibold">探针部署指南</span>
-                    </Space>
-                }
-                className="rounded-lg border border-gray-200"
-            >
 
-                {/* API Token 选择 */}
-                <Card className="mb-6" size="small">
-                    <Space direction="vertical" className="w-full">
-                        <Text strong>选择 API Token：</Text>
-                        {apiKeys.length === 0 ? (
-                            <Alert
-                                message="暂无可用的 API Token"
-                                description={
-                                    <span>
+            <div className="flex gap-2 items-center">
+                <div className="text-sm cursor-pointer hover:underline"
+                     onClick={() => navigate(-1)}
+                >返回 |
+                </div>
+                <h1 className="text-2xl font-semibold text-gray-900">探针部署指南</h1>
+            </div>
+
+            {/* API Token 选择 */}
+            <Card className="mb-6" size="small">
+                <Space direction="vertical" className="w-full">
+                    <Text strong>选择 API Token：</Text>
+                    {apiKeys.length === 0 ? (
+                        <Alert
+                            message="暂无可用的 API Token"
+                            description={
+                                <span>
                                         请先前往 <a href="/admin/api-keys">API密钥管理</a> 页面生成一个 API Token
                                     </span>
-                                }
-                                type="warning"
-                                showIcon
-                                className="mt-2"
-                            />
-                        ) : (
-                            <Select
-                                className="w-full mt-2"
-                                value={selectedApiKey}
-                                onChange={setSelectedApiKey}
-                                options={apiKeys.map(key => ({
-                                    label: `${key.name} (${key.key.substring(0, 8)}...)`,
-                                    value: key.key,
-                                }))}
-                            />
-                        )}
-                    </Space>
-                </Card>
-
-                <Tabs
-                    activeKey={selectedOS}
-                    onChange={setSelectedOS}
-                    size="large"
-                >
-                    {Object.entries(osConfigs).map(([key, config]) => (
-                        <TabPane
-                            tab={
-                                <div className={'flex items-center gap-2'}>
-                                    {config.icon}
-                                    <span>{config.name}</span>
-                                </div>
                             }
-                            key={key}
-                        >
-                            <Space direction={'vertical'} className={'w-full'}>
-                                <Card type="inner" title="安装步骤">
+                            type="warning"
+                            showIcon
+                            className="mt-2"
+                        />
+                    ) : (
+                        <Select
+                            className="w-full mt-2"
+                            value={selectedApiKey}
+                            onChange={setSelectedApiKey}
+                            options={apiKeys.map(key => ({
+                                label: `${key.name} (${key.key.substring(0, 8)}...)`,
+                                value: key.key,
+                            }))}
+                        />
+                    )}
+                </Space>
+            </Card>
+
+            <Tabs
+                activeKey={selectedOS}
+                onChange={setSelectedOS}
+                size="large"
+            >
+                {Object.entries(osConfigs).map(([key, config]) => (
+                    <TabPane
+                        tab={
+                            <div className={'flex items-center gap-2'}>
+                                {config.icon}
+                                <span>{config.name}</span>
+                            </div>
+                        }
+                        key={key}
+                    >
+                        <Space direction={'vertical'} className={'w-full'}>
+                            <Card type="inner" title="安装步骤">
                                     <pre className="m-0 overflow-auto text-sm">
                                         <code>{getRegisterCommand(key)}</code>
                                     </pre>
-                                    <Button
-                                        type={'link'}
-                                        onClick={() => {
-                                            copyToClipboard(getRegisterCommand(key));
-                                        }}
-                                        icon={<CopyIcon className={'h-4 w-4'}/>}
-                                        style={{margin: 0, padding: 0}}
-                                    >
-                                        复制命令
-                                    </Button>
-                                </Card>
+                                <Button
+                                    type={'link'}
+                                    onClick={() => {
+                                        copyToClipboard(getRegisterCommand(key));
+                                    }}
+                                    icon={<CopyIcon className={'h-4 w-4'}/>}
+                                    style={{margin: 0, padding: 0}}
+                                >
+                                    复制命令
+                                </Button>
+                            </Card>
 
-                                {/* 常用命令 */}
-                                <Card type="inner" title="服务管理命令">
-                                    <Paragraph type="secondary" className="mb-3">
-                                        注册完成后，您可以使用以下命令管理探针服务：
-                                    </Paragraph>
-                                    <pre className="m-0 overflow-auto text-sm">
+                            {/* 常用命令 */}
+                            <Card type="inner" title="服务管理命令">
+                                <Paragraph type="secondary" className="mb-3">
+                                    注册完成后，您可以使用以下命令管理探针服务：
+                                </Paragraph>
+                                <pre className="m-0 overflow-auto text-sm">
                                             <code>{getCommonCommands(key)}</code>
                                         </pre>
-                                </Card>
+                            </Card>
 
-                                {/* 参数说明 */}
-                                <Card type="inner" title="配置文件说明">
-                                    <Paragraph>
-                                        注册完成后，配置文件会保存在:
-                                    </Paragraph>
-                                    <ul className="space-y-2">
-                                        <li>
-                                            <Text code>~/.pika/agent.yaml</Text> - 配置文件路径
-                                        </li>
-                                        <li>
-                                            您可以手动编辑此文件来修改配置，修改后需要重启服务生效
-                                        </li>
-                                    </ul>
-                                </Card>
-                            </Space>
-                        </TabPane>
-                    ))}
-                </Tabs>
-            </Card>
+                            {/* 参数说明 */}
+                            <Card type="inner" title="配置文件说明">
+                                <Paragraph>
+                                    注册完成后，配置文件会保存在:
+                                </Paragraph>
+                                <ul className="space-y-2">
+                                    <li>
+                                        <Text code>~/.pika/agent.yaml</Text> - 配置文件路径
+                                    </li>
+                                    <li>
+                                        您可以手动编辑此文件来修改配置，修改后需要重启服务生效
+                                    </li>
+                                </ul>
+                            </Card>
+                        </Space>
+                    </TabPane>
+                ))}
+            </Tabs>
         </div>
     );
 };
