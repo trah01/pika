@@ -12,6 +12,8 @@ import (
 const (
 	// PropertyIDNotificationChannels 通知渠道配置的固定 ID
 	PropertyIDNotificationChannels = "notification_channels"
+	// PropertyIDSystemConfig 系统配置的固定 ID
+	PropertyIDSystemConfig = "system_config"
 )
 
 type PropertyHandler struct {
@@ -98,6 +100,40 @@ func (h *PropertyHandler) DeleteProperty(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "删除成功",
+	})
+}
+
+// GetSystemConfig 获取系统配置（公开访问，仅返回系统配置）
+func (h *PropertyHandler) GetSystemConfig(c echo.Context) error {
+	property, err := h.service.Get(c.Request().Context(), PropertyIDSystemConfig)
+	if err != nil {
+		// 如果配置不存在，返回默认值
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"id":   PropertyIDSystemConfig,
+			"name": "系统配置",
+			"value": map[string]string{
+				"systemNameEn": "Pika Monitor",
+				"systemNameZh": "皮卡监控",
+				"logoBase64":   "",
+			},
+		})
+	}
+
+	// 解析 JSON 值
+	var value interface{}
+	if property.Value != "" {
+		if err := json.Unmarshal([]byte(property.Value), &value); err != nil {
+			h.logger.Error("解析属性值失败", zap.String("id", PropertyIDSystemConfig), zap.Error(err))
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"error": "解析属性值失败",
+			})
+		}
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"id":    property.ID,
+		"name":  property.Name,
+		"value": value,
 	})
 }
 

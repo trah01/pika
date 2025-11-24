@@ -153,6 +153,9 @@ func setupApi(app *orz.App, components *AppComponents) {
 		publicApiWithOptionalAuth.GET("/monitors", components.MonitorHandler.GetMonitors)
 		publicApiWithOptionalAuth.GET("/monitors/:id/stats", components.MonitorHandler.GetStatsByID)
 		publicApiWithOptionalAuth.GET("/monitors/:id/history", components.MonitorHandler.GetHistoryByID)
+
+		// 系统配置（公开访问）- 用于公共页面显示系统名称和 Logo
+		publicApiWithOptionalAuth.GET("/system-config", components.PropertyHandler.GetSystemConfig)
 	}
 
 	// WebSocket 路由（探针连接）

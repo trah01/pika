@@ -5,6 +5,8 @@ import {App, Avatar, Button, Dropdown, Space} from 'antd';
 import {Activity, BookOpen, Eye, Key, LogOut, Server, Settings, User as UserIcon} from 'lucide-react';
 import {logout} from '../../api/auth';
 import {getServerVersion} from '../../api/agent';
+import {getSystemConfig, DEFAULT_SYSTEM_CONFIG} from '../../api/system-config';
+import type {SystemConfig} from '../../api/system-config';
 import type {User} from '../../types';
 import {cn} from '../../lib/utils';
 
@@ -24,6 +26,7 @@ const AdminLayout = () => {
     const {message: messageApi, modal} = App.useApp();
     const [userInfo, setUserInfo] = useState<User | null>(null);
     const [version, setVersion] = useState<string>('');
+    const [systemConfig, setSystemConfig] = useState<SystemConfig>(DEFAULT_SYSTEM_CONFIG);
 
     const menuItems: NavItem[] = useMemo(
         () => [
@@ -65,6 +68,17 @@ const AdminLayout = () => {
         }
 
         setUserInfo(JSON.parse(userInfoStr));
+
+        // 获取系统配置
+        getSystemConfig()
+            .then((config) => {
+                setSystemConfig(config);
+                // 更新网页 title
+                document.title = `${config.systemNameZh || DEFAULT_SYSTEM_CONFIG.systemNameZh} - 控制台`;
+            })
+            .catch((error) => {
+                console.error('获取系统配置失败:', error);
+            });
 
         // 获取服务端版本信息
         getServerVersion()
@@ -114,10 +128,17 @@ const AdminLayout = () => {
                 <div className="flex h-full items-center justify-between px-4">
                     <div className="flex items-center gap-3 text-white">
                         <div className="flex items-center justify-center">
-                            <img src="/logo.png" alt="Pika" className="h-10 w-10"/>
+                            <img
+                                src={systemConfig.logoBase64 || '/logo.png'}
+                                alt="Logo"
+                                className="h-10 w-10 object-contain"
+                                onError={(e) => {
+                                    e.currentTarget.src = '/logo.png';
+                                }}
+                            />
                         </div>
                         <div>
-                            <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">Pika Monitor</p>
+                            <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">{systemConfig.systemNameEn}</p>
                             <p className="text-sm font-semibold">控制台</p>
                         </div>
                     </div>
@@ -213,8 +234,9 @@ const AdminLayout = () => {
                                 <div className="mt-2 flex items-end justify-between">
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900">{version}</p>
-                                        <p className="text-[11px] text-gray-500 uppercase tracking-[0.1em]">Pika
-                                            Monitor</p>
+                                        <p className="text-[11px] text-gray-500 uppercase tracking-[0.1em]">
+                                            {systemConfig.systemNameEn}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
