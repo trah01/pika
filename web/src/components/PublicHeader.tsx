@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Activity, LayoutGrid, List, LogIn, Server, Settings} from 'lucide-react';
 import {getCurrentUser} from '../api/auth';
-import {Link} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 
 interface PublicHeaderProps {
     viewMode?: 'grid' | 'list';
@@ -15,7 +15,7 @@ const PublicHeader = ({
                           showViewToggle = false
                       }: PublicHeaderProps) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const currentPath = window.location.pathname;
+    let location = useLocation();
 
     useEffect(() => {
         // 检查本地是否有 token
@@ -41,6 +41,7 @@ const PublicHeader = ({
     }, []);
 
     // 判断导航是否激活
+    const currentPath = location.pathname;
     const isDeviceActive = currentPath === '/';
     const isMonitorActive = currentPath === '/monitors';
 

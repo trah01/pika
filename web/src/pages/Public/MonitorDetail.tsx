@@ -363,8 +363,8 @@ const MonitorDetail = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900">
-            <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
+        <div className="bg-slate-50">
+            <div className="mx-auto flex max-w-7xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
                 {/* Hero Section */}
                 <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 p-6 text-white shadow-xl">
                     <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_top,rgba(255,255,255,0.35),transparent_55%)]"/>
@@ -654,10 +654,6 @@ const MonitorDetail = () => {
                         </div>
                     </Card>
                 </main>
-
-                <footer className="border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-                    © {new Date().getFullYear()} Pika Monitor · 保持洞察，稳定运行。
-                </footer>
             </div>
         </div>
     );

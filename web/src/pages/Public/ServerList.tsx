@@ -1,11 +1,10 @@
-import {type ReactNode, useState} from 'react';
+import {type ReactNode, useEffect} from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import {useQuery} from '@tanstack/react-query';
 import {Cpu, EthernetPortIcon, HardDrive, Loader2, MemoryStick, Network} from 'lucide-react';
 import {listAgents} from '../../api/agent';
 import type {Agent, LatestMetrics} from '../../types';
-import PublicHeader from '../../components/PublicHeader';
-import PublicFooter from '../../components/PublicFooter';
+import {usePublicLayout} from '../PublicLayout';
 
 interface AgentWithMetrics extends Agent {
     metrics?: LatestMetrics;
@@ -116,7 +115,13 @@ const getProgressColor = (percent: number) => {
 
 const ServerList = () => {
     const navigate = useNavigate();
-    const [viewMode, setViewMode] = useState<ViewMode>('grid');
+    const {viewMode, setShowViewToggle} = usePublicLayout();
+
+    // 挂载时启用视图切换，卸载时禁用
+    useEffect(() => {
+        setShowViewToggle(true);
+        return () => setShowViewToggle(false);
+    }, [setShowViewToggle]);
 
     const {data: agents = [], isLoading, dataUpdatedAt} = useQuery<AgentWithMetrics[]>({
         queryKey: ['agents', 'online'],
@@ -437,29 +442,17 @@ const ServerList = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 flex flex-col">
-            <PublicHeader
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                showViewToggle={true}
-            />
-
-            <main className="flex-1 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                    {filteredAgents.length === 0 ? (
-                        <EmptyState
-                            title='暂无在线服务器'
-                            description='当前没有任何探针在线，请稍后再试。'
-                        />
-                    ) : viewMode === 'grid' ? (
-                        renderGridView()
-                    ) : (
-                        renderListView()
-                    )}
-                </div>
-            </main>
-
-            <PublicFooter/>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            {filteredAgents.length === 0 ? (
+                <EmptyState
+                    title='暂无在线服务器'
+                    description='当前没有任何探针在线，请稍后再试。'
+                />
+            ) : viewMode === 'grid' ? (
+                renderGridView()
+            ) : (
+                renderListView()
+            )}
         </div>
     );
 };

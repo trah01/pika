@@ -5,6 +5,7 @@ import PrivateRoute from '../components/PrivateRoute';
 const LoginPage = lazy(() => import('../pages/Login'));
 const GitHubCallbackPage = lazy(() => import('../pages/Login/GitHubCallback'));
 const OIDCCallbackPage = lazy(() => import('../pages/Login/OIDCCallback'));
+const PublicLayout = lazy(() => import('../pages/PublicLayout'));
 const AdminLayout = lazy(() => import('../pages/AdminLayout'));
 const AgentListPage = lazy(() => import('../pages/Agents/AgentList'));
 const AgentDetailPage = lazy(() => import('../pages/Agents/AgentDetail'));
@@ -45,20 +46,25 @@ const router = createBrowserRouter([
     },
     // 公开页面 - 不需要登录
     {
-        path: '/',
-        element: lazyLoad(ServerListPage),
-    },
-    {
-        path: '/servers/:id',
-        element: lazyLoad(ServerDetailPage),
-    },
-    {
-        path: '/monitors',
-        element: lazyLoad(PublicMonitorListPage),
-    },
-    {
-        path: '/monitors/:id',
-        element: lazyLoad(PublicMonitorDetailPage),
+        element: lazyLoad(PublicLayout),
+        children: [
+            {
+                path: '/',
+                element: lazyLoad(ServerListPage),
+            },
+            {
+                path: '/servers/:id',
+                element: lazyLoad(ServerDetailPage),
+            },
+            {
+                path: '/monitors',
+                element: lazyLoad(PublicMonitorListPage),
+            },
+            {
+                path: '/monitors/:id',
+                element: lazyLoad(PublicMonitorDetailPage),
+            },
+        ],
     },
     // 管理员页面 - 需要登录
     {

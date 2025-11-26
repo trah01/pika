@@ -1,11 +1,10 @@
-import {useState} from 'react';
+import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useQuery} from '@tanstack/react-query';
 import {AlertCircle, CheckCircle2, Clock, Loader2, Shield} from 'lucide-react';
 import {getPublicMonitors} from '../../api/monitor';
 import type {PublicMonitor} from '../../types';
-import PublicHeader from '../../components/PublicHeader';
-import PublicFooter from '../../components/PublicFooter';
+import {usePublicLayout} from '../PublicLayout';
 
 type ViewMode = 'grid' | 'list';
 
@@ -84,7 +83,13 @@ const EmptyState = () => (
 
 const MonitorList = () => {
     const navigate = useNavigate();
-    const [viewMode, setViewMode] = useState<ViewMode>('grid');
+    const {viewMode, setShowViewToggle} = usePublicLayout();
+
+    // 挂载时启用视图切换，卸载时禁用
+    useEffect(() => {
+        setShowViewToggle(true);
+        return () => setShowViewToggle(false);
+    }, [setShowViewToggle]);
 
     const {data: monitors = [], isLoading, dataUpdatedAt} = useQuery<PublicMonitor[]>({
         queryKey: ['publicMonitors'],
@@ -330,43 +335,21 @@ const MonitorList = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-white text-slate-900 flex flex-col">
-                <PublicHeader
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                    showViewToggle={true}
-                />
-                <main className="flex-1 bg-white">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-                        <LoadingSpinner/>
-                    </div>
-                </main>
-                <PublicFooter/>
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+                <LoadingSpinner/>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 flex flex-col">
-            <PublicHeader
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                showViewToggle={true}
-            />
-
-            <main className="flex-1 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                    {monitorSummaries.length === 0 ? (
-                        <EmptyState/>
-                    ) : viewMode === 'grid' ? (
-                        renderGridView()
-                    ) : (
-                        renderListView()
-                    )}
-                </div>
-            </main>
-
-            <PublicFooter/>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            {monitorSummaries.length === 0 ? (
+                <EmptyState/>
+            ) : viewMode === 'grid' ? (
+                renderGridView()
+            ) : (
+                renderListView()
+            )}
         </div>
     );
 };
