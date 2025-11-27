@@ -354,6 +354,13 @@ func (s *AlertService) CheckMonitorAlerts(ctx context.Context) error {
 				s.logger.Error("检查服务下线告警失败", zap.Error(err))
 			}
 		}
+
+		// 检查探针离线告警
+		if config.Rules.AgentOfflineEnabled {
+			if err := s.checkAgentOfflineAlerts(ctx, &config, now); err != nil {
+				s.logger.Error("检查探针离线告警失败", zap.Error(err))
+			}
+		}
 	}
 
 	return nil
@@ -701,6 +708,155 @@ func (s *AlertService) resolveServiceDownAlert(ctx context.Context, config *mode
 
 					if err := s.notifier.SendNotificationByConfigs(context.Background(), enabledChannels, existingRecord, agent); err != nil {
 						s.logger.Error("发送服务恢复通知失败", zap.Error(err))
+					}
+				}()
+			}
+		}
+	}
+
+	state.IsFiring = false
+	state.LastRecordID = 0
+}
+
+// checkAgentOfflineAlerts 检查探针离线告警
+func (s *AlertService) checkAgentOfflineAlerts(ctx context.Context, config *models.AlertConfig, now int64) error {
+	// 获取所有探针
+	agents, err := s.agentRepo.FindAll(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, agent := range agents {
+		stateKey := fmt.Sprintf("%s:%s:agent_offline:%s", config.AgentID, config.ID, agent.ID)
+
+		s.mu.Lock()
+		state, exists := s.states[stateKey]
+		if !exists {
+			state = &models.AlertState{
+				AgentID:   agent.ID,
+				ConfigID:  config.ID,
+				AlertType: "agent_offline",
+				Threshold: 0,
+				Duration:  config.Rules.AgentOfflineDuration,
+			}
+			s.states[stateKey] = state
+		}
+		s.mu.Unlock()
+
+		state.LastCheckTime = now
+
+		// 计算探针离线时间（秒）
+		offlineSeconds := (now - agent.LastSeenAt) / 1000
+
+		// 检查探针是否离线超过阈值
+		if offlineSeconds >= int64(config.Rules.AgentOfflineDuration) {
+			// 探针离线超过阈值
+			if !state.IsFiring {
+				// 触发告警
+				s.fireAgentOfflineAlert(ctx, config, &agent, state, offlineSeconds, now)
+			}
+		} else {
+			// 探针在线或离线时间未达到阈值
+			if state.IsFiring {
+				// 从告警状态变为恢复状态
+				s.resolveAgentOfflineAlert(ctx, config, &agent, state)
+			}
+		}
+	}
+
+	return nil
+}
+
+// fireAgentOfflineAlert 触发探针离线告警
+func (s *AlertService) fireAgentOfflineAlert(ctx context.Context, config *models.AlertConfig, agent *models.Agent, state *models.AlertState, offlineSeconds int64, now int64) {
+	s.logger.Info("触发探针离线告警",
+		zap.String("agentId", agent.ID),
+		zap.String("agentName", agent.Name),
+		zap.Int64("offlineSeconds", offlineSeconds),
+		zap.Int("threshold", state.Duration),
+	)
+
+	// 创建告警记录
+	record := &models.AlertRecord{
+		AgentID:     agent.ID,
+		ConfigID:    config.ID,
+		ConfigName:  config.Name,
+		AlertType:   "agent_offline",
+		Message:     fmt.Sprintf("探针 %s 已离线%d秒，超过阈值%d秒", agent.Name, offlineSeconds, state.Duration),
+		Threshold:   float64(state.Duration),
+		ActualValue: float64(offlineSeconds),
+		Level:       "critical",
+		Status:      "firing",
+		FiredAt:     now,
+		CreatedAt:   now,
+	}
+
+	err := s.alertRepo.CreateAlertRecord(ctx, record)
+	if err != nil {
+		s.logger.Error("创建探针离线告警记录失败", zap.Error(err))
+		return
+	}
+
+	state.IsFiring = true
+	state.LastRecordID = record.ID
+
+	// 发送通知
+	go func() {
+		channelConfigs, err := s.propertyService.GetNotificationChannelConfigs(context.Background())
+		if err != nil {
+			s.logger.Error("获取通知渠道配置失败", zap.Error(err))
+			return
+		}
+
+		var enabledChannels []models.NotificationChannelConfig
+		for _, channel := range channelConfigs {
+			if channel.Enabled {
+				enabledChannels = append(enabledChannels, channel)
+			}
+		}
+
+		if err := s.notifier.SendNotificationByConfigs(context.Background(), enabledChannels, record, agent); err != nil {
+			s.logger.Error("发送探针离线告警通知失败", zap.Error(err))
+		}
+	}()
+}
+
+// resolveAgentOfflineAlert 恢复探针离线告警
+func (s *AlertService) resolveAgentOfflineAlert(ctx context.Context, config *models.AlertConfig, agent *models.Agent, state *models.AlertState) {
+	s.logger.Info("探针离线告警恢复",
+		zap.String("agentId", agent.ID),
+		zap.String("agentName", agent.Name),
+	)
+
+	// 更新告警记录状态
+	if state.LastRecordID > 0 {
+		existingRecord, err := s.alertRepo.GetLatestAlertRecord(ctx, config.ID, "agent_offline")
+		if err == nil && existingRecord != nil {
+			existingRecord.Status = "resolved"
+			existingRecord.ResolvedAt = time.Now().UnixMilli()
+			existingRecord.UpdatedAt = time.Now().UnixMilli()
+
+			err = s.alertRepo.UpdateAlertRecord(ctx, existingRecord)
+			if err != nil {
+				s.logger.Error("更新探针离线告警记录失败", zap.Error(err))
+			} else {
+				// 发送恢复通知
+				go func() {
+					channelConfigs, err := s.propertyService.GetNotificationChannelConfigs(context.Background())
+					if err != nil {
+						s.logger.Error("获取通知渠道配置失败", zap.Error(err))
+						return
+					}
+
+					var enabledChannels []models.NotificationChannelConfig
+					for _, channel := range channelConfigs {
+						if channel.Enabled {
+							enabledChannels = append(enabledChannels, channel)
+						}
+					}
+
+					if err := s.notifier.SendNotificationByConfigs(context.Background(), enabledChannels, existingRecord, agent); err != nil {
+						s.logger.Error("发送探针恢复通知失败", zap.Error(err))
 					}
 				}()
 			}

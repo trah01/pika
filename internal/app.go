@@ -71,6 +71,11 @@ func setup(app *orz.App) error {
 		app.Logger().Error("初始化默认属性配置失败", zap.Error(err))
 		// 不返回错误，继续启动
 	}
+	// 初始化探针的状态全部为离线
+	if err := components.AgentService.InitStatus(ctx); err != nil {
+		app.Logger().Error("初始化探针状态失败", zap.Error(err))
+		// 不返回错误，继续启动
+	}
 
 	// 启动WebSocket管理器
 	go components.WSManager.Run(ctx)

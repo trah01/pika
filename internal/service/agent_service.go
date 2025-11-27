@@ -109,7 +109,7 @@ func (s *AgentService) RegisterAgent(ctx context.Context, ip string, info *proto
 
 // UpdateAgentStatus 更新探针状态
 func (s *AgentService) UpdateAgentStatus(ctx context.Context, agentID string, status int) error {
-	return s.AgentRepo.UpdateStatus(ctx, agentID, status)
+	return s.AgentRepo.UpdateStatus(ctx, agentID, status, time.Now().UnixMilli())
 }
 
 // GetAgent 获取探针信息
@@ -789,4 +789,17 @@ func (s *AgentService) GetAgentByAuth(ctx context.Context, id string, isAuthenti
 // GetAllTags 获取所有探针的标签
 func (s *AgentService) GetAllTags(ctx context.Context) ([]string, error) {
 	return s.AgentRepo.GetAllTags(ctx)
+}
+
+func (s *AgentService) InitStatus(ctx context.Context) error {
+	agents, err := s.AgentRepo.FindAll(ctx)
+	if err != nil {
+		return err
+	}
+	for _, agent := range agents {
+		if err := s.AgentRepo.UpdateStatus(ctx, agent.ID, 0, 0); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -46,6 +46,8 @@ const AlertSettings = () => {
                     certThreshold: 30,
                     serviceEnabled: true,
                     serviceDuration: 300,
+                    agentOfflineEnabled: true,
+                    agentOfflineDuration: 300,
                 },
             });
         }
@@ -198,6 +200,39 @@ const AlertSettings = () => {
                                             name={['rules', 'serviceDuration']}
                                             className="mb-0"
                                             tooltip="服务持续离线多久后触发告警"
+                                        >
+                                            <InputNumber
+                                                min={1}
+                                                max={3600}
+                                                style={{width: '100%'}}
+                                                disabled={!enabled}
+                                            />
+                                        </Form.Item>
+                                    </div>
+                                );
+                            }}
+                        </Form.Item>
+                    </Card>
+
+                    <Card title="探针离线告警规则" type="inner">
+                        <Form.Item noStyle shouldUpdate>
+                            {({getFieldValue}) => {
+                                const enabled = getFieldValue(['rules', 'agentOfflineEnabled']);
+                                return (
+                                    <div className="flex items-center gap-8">
+                                        <Form.Item
+                                            label="开关"
+                                            name={['rules', 'agentOfflineEnabled']}
+                                            valuePropName="checked"
+                                            className="mb-0"
+                                        >
+                                            <Switch/>
+                                        </Form.Item>
+                                        <Form.Item
+                                            label="持续时间（秒）"
+                                            name={['rules', 'agentOfflineDuration']}
+                                            className="mb-0"
+                                            tooltip="探针持续离线多久后触发告警"
                                         >
                                             <InputNumber
                                                 min={1}

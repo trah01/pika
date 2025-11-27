@@ -41,6 +41,10 @@ type AlertRules struct {
 	// 服务下线告警配置
 	ServiceEnabled  bool `json:"serviceEnabled"`  // 是否启用服务下线告警
 	ServiceDuration int  `json:"serviceDuration"` // 持续时间（秒）
+
+	// 探针离线告警配置
+	AgentOfflineEnabled  bool `json:"agentOfflineEnabled"`  // 是否启用探针离线告警
+	AgentOfflineDuration int  `json:"agentOfflineDuration"` // 持续时间（秒）
 }
 
 func (AlertConfig) TableName() string {

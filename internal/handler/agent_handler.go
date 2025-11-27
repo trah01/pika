@@ -911,12 +911,7 @@ register_agent() {
 
     echo_info "正在注册探针..."
 
-    if /usr/local/bin/$AGENT_NAME register --endpoint "$endpoint" --token "$token"; then
-        echo_info "探针注册成功"
-    else
-        echo_error "探针注册失败"
-        exit 1
-    fi
+	/usr/local/bin/$AGENT_NAME register --endpoint "$endpoint" --token "$token"
 }
 
 # 主流程

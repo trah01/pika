@@ -448,9 +448,11 @@ export interface FeishuConfig {
 }
 
 export interface WebhookConfig {
-    url: string;            // 自定义URL
-    method?: string;        // HTTP方法，默认POST
-    headers?: Record<string, string>; // 自定义请求头
+    url: string;                        // 自定义URL
+    method?: string;                    // HTTP方法：GET, POST, PUT, PATCH, DELETE，默认POST
+    headers?: Record<string, string>;   // 自定义请求头
+    bodyTemplate?: 'json' | 'form' | 'custom'; // 请求体模板类型
+    customBody?: string;                // 自定义请求体模板（当 bodyTemplate 为 custom 时使用）
 }
 
 export interface EmailConfig {

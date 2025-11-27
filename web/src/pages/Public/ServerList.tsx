@@ -39,7 +39,7 @@ const formatBytes = (bytes: number): string => {
 const formatPercentValue = (value: number): string => (Number.isFinite(value) ? value.toFixed(1) : '0.0');
 
 const ProgressBar = ({percent, colorClass}: { percent: number; colorClass: string }) => (
-    <div className="relative h-2 w-full overflow-hidden rounded-lg bg-slate-100">
+    <div className="relative h-2 w-full overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
         <div
             className={`absolute inset-y-0 left-0 ${colorClass} transition-all duration-500`}
             style={{width: `${Math.min(Math.max(percent, 0), 100)}%`}}
@@ -48,10 +48,10 @@ const ProgressBar = ({percent, colorClass}: { percent: number; colorClass: strin
 );
 
 const LoadingSpinner = () => (
-    <div className="flex min-h-screen items-center justify-center bg-white">
+    <div className="flex min-h-screen items-center justify-center bg-white dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-400"/>
-            <p className="text-sm text-slate-500">数据加载中，请稍候...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-slate-400 dark:text-slate-400"/>
+            <p className="text-sm text-slate-500 dark:text-slate-400">数据加载中，请稍候...</p>
         </div>
     </div>
 );
@@ -64,12 +64,12 @@ interface EmptyStateProps {
 
 const EmptyState = ({title, description, extra}: EmptyStateProps) => (
     <div
-        className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+        className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/60 p-12 text-center backdrop-blur">
+        <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300">
             <HardDrive className="h-7 w-7"/>
         </div>
-        <h3 className="mt-4 text-base font-semibold text-slate-900">{title}</h3>
-        <p className="mt-2 max-w-sm text-sm text-slate-500">{description}</p>
+        <h3 className="mt-4 text-base font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
+        <p className="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">{description}</p>
         {extra ? <div className="mt-4">{extra}</div> : null}
     </div>
 );
@@ -113,6 +113,24 @@ const getProgressColor = (percent: number) => {
     return 'bg-emerald-500';
 };
 
+// 获取状态显示信息
+const getStatusDisplay = (status: number) => {
+    if (status === 1) {
+        return {
+            text: '在线',
+            bgColor: 'bg-emerald-50 dark:bg-emerald-500/15',
+            textColor: 'text-emerald-700 dark:text-emerald-200',
+            dotColor: 'bg-emerald-500 dark:bg-emerald-400',
+        };
+    }
+    return {
+        text: '离线',
+        bgColor: 'bg-slate-50 dark:bg-slate-800/80',
+        textColor: 'text-slate-600 dark:text-slate-400',
+        dotColor: 'bg-slate-400 dark:bg-slate-500',
+    };
+};
+
 const ServerList = () => {
     const navigate = useNavigate();
     const {viewMode, setShowViewToggle} = usePublicLayout();
@@ -147,45 +165,46 @@ const ServerList = () => {
                 const diskUsage = calculateDiskUsage(agent.metrics);
                 const {upload, download} = calculateNetworkSpeed(agent.metrics);
                 const {totalUpload, totalDownload} = calculateNetworkTraffic(agent.metrics);
+                const statusDisplay = getStatusDisplay(agent.status);
 
                 return (
                     <Link
                         key={agent.id}
                         tabIndex={0}
                         to={`/servers/${agent.id}`}
-                        className="group relative flex h-full cursor-pointer flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-5 transition duration-200 hover:border-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                        className="group relative flex h-full cursor-pointer flex-col gap-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-transparent p-5 transition duration-200 hover:border-blue-300 dark:hover:border-blue-500/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
                     >
                         <div className="flex flex-1 flex-col gap-4">
                             <div className="flex flex-col gap-2">
                                 <div className="flex items-center justify-between">
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <h3 className="text-base font-semibold text-slate-900">
+                                        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">
                                             {agent.name || agent.hostname}
                                         </h3>
                                         <span
-                                            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                                            <span className="flex h-1.5 w-1.5 rounded-lg bg-emerald-500"/>
-                                            在线
+                                            className={`inline-flex items-center gap-1.5 rounded-lg ${statusDisplay.bgColor} px-2.5 py-1 text-xs font-medium ${statusDisplay.textColor}`}>
+                                            <span className={`flex h-1.5 w-1.5 rounded-lg ${statusDisplay.dotColor}`}/>
+                                            {statusDisplay.text}
                                         </span>
                                     </div>
                                     <span
-                                        className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
+                                        className="inline-flex items-center gap-1 rounded-lg bg-blue-50 dark:bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-sky-200">
                                         {agent.os} · {agent.arch}
                                     </span>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                                     {agent.tags && agent.tags.length > 0 && (
                                         agent.tags?.map((tag, index) => (
                                             <span
                                                 key={index}
-                                                className="inline-flex items-center gap-1 rounded bg-blue-50 px-2 py-0.5 text-blue-700">
+                                                className="inline-flex items-center gap-1 rounded bg-blue-50 dark:bg-sky-500/10 px-2 py-0.5 text-blue-700 dark:text-sky-200">
                                                 {tag}
                                             </span>
                                         ))
                                     )}
                                     {agent.expireTime > 0 && (
                                         <span
-                                            className="inline-flex items-center gap-1 rounded bg-amber-50 px-2 py-0.5 text-amber-700">
+                                            className="inline-flex items-center gap-1 rounded bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 text-amber-700 dark:text-amber-200">
                                             <span
                                                 className="font-medium">到期:</span> {new Date(agent.expireTime).toLocaleDateString('zh-CN')}
                                         </span>
@@ -197,45 +216,45 @@ const ServerList = () => {
                         <div className="flex flex-col gap-3">
                             <div className="grid grid-cols-3 gap-3">
                                 <div
-                                    className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+                                    className="flex flex-col gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 p-3">
                                     <div className="flex items-center gap-2">
                                         <div
-                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-sky-900/40 text-blue-600 dark:text-sky-200">
                                             <Cpu className="h-3.5 w-3.5"/>
                                         </div>
-                                        <span className="text-xs font-medium text-slate-600">CPU</span>
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-200">CPU</span>
                                     </div>
-                                    <div className="text-sm font-bold text-slate-900">
+                                    <div className="text-sm font-bold text-slate-900 dark:text-slate-50">
                                         {formatPercentValue(cpuUsage)}%
                                     </div>
                                     <ProgressBar percent={cpuUsage} colorClass={getProgressColor(cpuUsage)}/>
                                 </div>
 
                                 <div
-                                    className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+                                    className="flex flex-col gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 p-3">
                                     <div className="flex items-center gap-2">
                                         <div
-                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-sky-900/40 text-blue-600 dark:text-sky-200">
                                             <MemoryStick className="h-3.5 w-3.5"/>
                                         </div>
-                                        <span className="text-xs font-medium text-slate-600">内存</span>
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-200">内存</span>
                                     </div>
-                                    <div className="text-sm font-bold text-slate-900">
+                                    <div className="text-sm font-bold text-slate-900 dark:text-slate-50">
                                         {formatPercentValue(memoryUsage)}%
                                     </div>
                                     <ProgressBar percent={memoryUsage} colorClass={getProgressColor(memoryUsage)}/>
                                 </div>
 
                                 <div
-                                    className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50/50 p-3">
+                                    className="flex flex-col gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/60 p-3">
                                     <div className="flex items-center gap-2">
                                         <div
-                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-sky-900/40 text-blue-600 dark:text-sky-200">
                                             <HardDrive className="h-3.5 w-3.5"/>
                                         </div>
-                                        <span className="text-xs font-medium text-slate-600">磁盘</span>
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-200">磁盘</span>
                                     </div>
-                                    <div className="text-sm font-bold text-slate-900">
+                                    <div className="text-sm font-bold text-slate-900 dark:text-slate-50">
                                         {formatPercentValue(diskUsage)}%
                                     </div>
                                     <ProgressBar percent={diskUsage} colorClass={getProgressColor(diskUsage)}/>
@@ -244,41 +263,41 @@ const ServerList = () => {
 
                             <div className="space-y-2">
                                 <div
-                                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                    className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 px-3 py-2.5">
                                     <div className="flex items-center gap-2">
                                         <div
-                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-sky-900/40 text-blue-600 dark:text-sky-200">
                                             <Network className="h-3.5 w-3.5"/>
                                         </div>
-                                        <span className="text-xs font-medium text-slate-600">实时速率</span>
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-200">实时速率</span>
                                     </div>
-                                    <div className="flex flex-col items-end gap-1 text-xs font-medium text-slate-700">
+                                    <div className="flex flex-col items-end gap-1 text-xs font-medium text-slate-700 dark:text-slate-100">
                                         <span className="flex items-center gap-1">
-                                            <span className="text-slate-500">↑</span>
+                                            <span className="text-slate-500 dark:text-slate-400">↑</span>
                                             {formatSpeed(upload)}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <span className="text-slate-500">↓</span>
+                                            <span className="text-slate-500 dark:text-slate-400">↓</span>
                                             {formatSpeed(download)}
                                         </span>
                                     </div>
                                 </div>
                                 <div
-                                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                    className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 px-3 py-2.5">
                                     <div className="flex items-center gap-2">
                                         <div
-                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-sky-900/40 text-blue-600 dark:text-sky-200">
                                             <EthernetPortIcon className="h-3.5 w-3.5"/>
                                         </div>
-                                        <span className="text-xs font-medium text-slate-600">累计流量</span>
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-200">累计流量</span>
                                     </div>
-                                    <div className="flex flex-col items-end gap-1 text-xs font-medium text-slate-700">
+                                    <div className="flex flex-col items-end gap-1 text-xs font-medium text-slate-700 dark:text-slate-100">
                                         <span className="flex items-center gap-1">
-                                            <span className="text-slate-500">↑</span>
+                                            <span className="text-slate-500 dark:text-slate-400">↑</span>
                                             {formatTraffic(totalUpload)}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <span className="text-slate-500">↓</span>
+                                            <span className="text-slate-500 dark:text-slate-400">↓</span>
                                             {formatTraffic(totalDownload)}
                                         </span>
                                     </div>
@@ -294,10 +313,10 @@ const ServerList = () => {
     const renderListView = () => (
         <>
             {/* 桌面端：使用表格布局 */}
-            <div className="hidden overflow-hidden rounded-md border border-slate-200 bg-white lg:block">
-                <table className="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead className="bg-blue-50">
-                    <tr className="text-left text-xs font-semibold uppercase tracking-wide text-blue-600">
+            <div className="hidden overflow-hidden rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 lg:block">
+                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+                    <thead className="bg-blue-50 dark:bg-slate-900/70">
+                    <tr className="text-left text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-sky-200">
                         <th className="px-5 py-3">服务器</th>
                         <th className="px-5 py-3">系统</th>
                         <th className="px-5 py-3">CPU</th>
@@ -306,7 +325,7 @@ const ServerList = () => {
                         <th className="px-5 py-3">网络</th>
                     </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 text-slate-700">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-100">
                     {filteredAgents.map((agent) => {
                         const cpuUsage = agent.metrics?.cpu?.usagePercent ?? 0;
                         const cpuModel = agent.metrics?.cpu?.modelName || '未知';
@@ -324,6 +343,7 @@ const ServerList = () => {
                         const diskFree = agent.metrics?.disk?.free ?? 0;
 
                         const {upload, download} = calculateNetworkSpeed(agent.metrics);
+                        const statusDisplay = getStatusDisplay(agent.status);
 
                         return (
                             <tr
@@ -336,31 +356,31 @@ const ServerList = () => {
                                         handleNavigate(agent.id);
                                     }
                                 }}
-                                className="cursor-pointer transition hover:bg-blue-50 focus-within:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+                                className="cursor-pointer transition hover:bg-blue-50 dark:hover:bg-slate-900/70 focus-within:bg-blue-50 dark:focus-within:bg-slate-900/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
                             >
 
                                 <td className="px-5 py-4 align-center">
                                     <div className="flex flex-col gap-2">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <span className="text-sm font-semibold text-slate-900">
+                                            <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                                                 {agent.name || agent.hostname}
                                             </span>
                                             <span
-                                                className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600">
-                                                <span className="h-1.5 w-1.5 rounded-lg bg-emerald-500"/>
-                                                在线
+                                                className={`inline-flex items-center gap-1 rounded-lg ${statusDisplay.bgColor} px-2 py-0.5 text-xs font-medium ${statusDisplay.textColor}`}>
+                                                <span className={`h-1.5 w-1.5 rounded-lg ${statusDisplay.dotColor}`}/>
+                                                {statusDisplay.text}
                                             </span>
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                                             {agent.tags && agent.tags.length > 0 && (
                                                 agent.tags?.map((tag, index) => (
-                                                    <span key={index} className="inline-flex items-center gap-1 text-blue-700">
+                                                    <span key={index} className="inline-flex items-center gap-1 text-blue-700 dark:text-sky-200">
                                                         {tag}
                                                     </span>
                                                 ))
                                             )}
                                             {agent.expireTime > 0 && (
-                                                <span className="inline-flex items-center gap-1 text-amber-700">
+                                                <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-200">
                                                     <span
                                                         className="font-medium">到期:</span> {new Date(agent.expireTime).toLocaleDateString('zh-CN')}
                                                 </span>
@@ -368,9 +388,9 @@ const ServerList = () => {
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-5 py-4 align-center text-xs text-slate-500">
+                                <td className="px-5 py-4 align-center text-xs text-slate-500 dark:text-slate-300">
                                     <div>{agent.os}</div>
-                                    <div className="text-slate-400">{agent.arch}</div>
+                                    <div className="text-slate-400 dark:text-slate-400">{agent.arch}</div>
                                 </td>
                                 <td className="px-5 py-4 align-center">
                                     <div className="flex flex-col gap-2">
@@ -379,11 +399,11 @@ const ServerList = () => {
                                                 <ProgressBar percent={cpuUsage}
                                                              colorClass={getProgressColor(cpuUsage)}/>
                                             </div>
-                                            <span className="text-xs font-semibold text-slate-900">
+                                            <span className="text-xs font-semibold text-slate-900 dark:text-slate-50">
                                                 {formatPercentValue(cpuUsage)}%
                                             </span>
                                         </div>
-                                        <div className="text-xs text-slate-500">
+                                        <div className="text-xs text-slate-500 dark:text-slate-400">
                                             <div className="truncate" style={{maxWidth: '200px'}}
                                                  title={cpuModel}>{cpuModel}</div>
                                             <div>{cpuPhysicalCores}核{cpuLogicalCores}线程</div>
@@ -397,11 +417,11 @@ const ServerList = () => {
                                                 <ProgressBar percent={memoryUsage}
                                                              colorClass={getProgressColor(memoryUsage)}/>
                                             </div>
-                                            <span className="text-xs font-semibold text-slate-900">
+                                            <span className="text-xs font-semibold text-slate-900 dark:text-slate-50">
                                                 {formatPercentValue(memoryUsage)}%
                                             </span>
                                         </div>
-                                        <div className="text-xs text-slate-500">
+                                        <div className="text-xs text-slate-500 dark:text-slate-400">
                                             <div>总计:{formatBytes(memoryTotal)}</div>
                                             <div>已用:{formatBytes(memoryUsed)} / 剩余:{formatBytes(memoryFree)}</div>
                                         </div>
@@ -414,17 +434,17 @@ const ServerList = () => {
                                                 <ProgressBar percent={diskUsage}
                                                              colorClass={getProgressColor(diskUsage)}/>
                                             </div>
-                                            <span className="text-xs font-semibold text-slate-900">
+                                            <span className="text-xs font-semibold text-slate-900 dark:text-slate-50">
                                                 {formatPercentValue(diskUsage)}%
                                             </span>
                                         </div>
-                                        <div className="text-xs text-slate-500">
+                                        <div className="text-xs text-slate-500 dark:text-slate-400">
                                             <div>总计:{formatBytes(diskTotal)}</div>
                                             <div>已用:{formatBytes(diskUsed)} / 剩余:{formatBytes(diskFree)}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-5 py-4 align-center text-xs text-slate-600">
+                                <td className="px-5 py-4 align-center text-xs text-slate-600 dark:text-slate-300">
                                     <div>↑ {formatSpeed(upload)}</div>
                                     <div>↓ {formatSpeed(download)}</div>
                                 </td>

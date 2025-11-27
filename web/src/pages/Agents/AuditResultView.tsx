@@ -268,14 +268,6 @@ const AuditResultView = ({result}: AuditResultViewProps) => {
             key: 'address',
             render: (record: any) => `${record.address}:${record.port}`,
         },
-        {
-            title: '公网暴露',
-            dataIndex: 'isPublic',
-            key: 'isPublic',
-            width: 100,
-            render: (isPublic: boolean) => isPublic ?
-                <Tag color="warning">是</Tag> : <Tag color="default">否</Tag>
-        },
         {title: '进程', dataIndex: 'processName', key: 'processName'},
         {title: 'PID', dataIndex: 'processPid', key: 'processPid', width: 80},
     ];

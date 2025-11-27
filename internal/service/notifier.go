@@ -10,9 +10,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/dushixiang/pika/internal/models"
+	"github.com/valyala/fasttemplate"
 	"go.uber.org/zap"
 )
 
@@ -185,19 +188,182 @@ func (n *Notifier) sendFeishu(ctx context.Context, webhook, message string) erro
 }
 
 // sendCustomWebhook 发送自定义Webhook
-func (n *Notifier) sendCustomWebhook(ctx context.Context, webhook string, message string) error {
-	// 发送完整的告警记录和探针信息
-	body := map[string]interface{}{
-		"msg_type": "text",
-		"text": map[string]string{
-			"content": message,
-		},
+func (n *Notifier) sendCustomWebhook(ctx context.Context, config map[string]interface{}, agent *models.Agent, record *models.AlertRecord) error {
+	// 解析配置
+	webhookURL, ok := config["url"].(string)
+	if !ok || webhookURL == "" {
+		return fmt.Errorf("自定义Webhook配置缺少 url")
 	}
 
-	_, err := n.sendJSONRequest(ctx, webhook, body)
-	if err != nil {
-		return err
+	// 获取请求方法，默认 POST
+	method := "POST"
+	if m, ok := config["method"].(string); ok && m != "" {
+		method = strings.ToUpper(m)
 	}
+
+	// 获取自定义请求头
+	headers := make(map[string]string)
+	if h, ok := config["headers"].(map[string]interface{}); ok {
+		for k, v := range h {
+			if strVal, ok := v.(string); ok {
+				headers[k] = strVal
+			}
+		}
+	}
+
+	// 获取请求体模板类型，默认 json
+	bodyTemplate := "json"
+	if bt, ok := config["bodyTemplate"].(string); ok && bt != "" {
+		bodyTemplate = bt
+	}
+
+	// 构建消息内容
+	message := n.buildMessage(agent, record)
+
+	// 根据模板类型构建请求体
+	var reqBody io.Reader
+	var contentType string
+
+	switch bodyTemplate {
+	case "json":
+		// JSON 格式
+		body := map[string]interface{}{
+			"msg_type": "text",
+			"text": map[string]string{
+				"content": message,
+			},
+			"agent": map[string]interface{}{
+				"id":       agent.ID,
+				"name":     agent.Name,
+				"hostname": agent.Hostname,
+				"ip":       agent.IP,
+			},
+			"alert": map[string]interface{}{
+				"type":        record.AlertType,
+				"level":       record.Level,
+				"status":      record.Status,
+				"message":     record.Message,
+				"threshold":   record.Threshold,
+				"actualValue": record.ActualValue,
+				"firedAt":     record.FiredAt,
+				"resolvedAt":  record.ResolvedAt,
+			},
+		}
+		data, err := json.Marshal(body)
+		if err != nil {
+			return fmt.Errorf("序列化 JSON 失败: %w", err)
+		}
+		reqBody = bytes.NewReader(data)
+		contentType = "application/json"
+
+	case "form":
+		// Form 表单格式
+		formData := url.Values{}
+		formData.Set("message", message)
+		formData.Set("agent_id", agent.ID)
+		formData.Set("agent_name", agent.Name)
+		formData.Set("agent_hostname", agent.Hostname)
+		formData.Set("agent_ip", agent.IP)
+		formData.Set("alert_type", record.AlertType)
+		formData.Set("alert_level", record.Level)
+		formData.Set("alert_status", record.Status)
+		formData.Set("alert_message", record.Message)
+		formData.Set("threshold", fmt.Sprintf("%.2f", record.Threshold))
+		formData.Set("actual_value", fmt.Sprintf("%.2f", record.ActualValue))
+		formData.Set("fired_at", fmt.Sprintf("%d", record.FiredAt))
+		if record.ResolvedAt > 0 {
+			formData.Set("resolved_at", fmt.Sprintf("%d", record.ResolvedAt))
+		}
+		reqBody = strings.NewReader(formData.Encode())
+		contentType = "application/x-www-form-urlencoded"
+
+	case "custom":
+		// 自定义模板，支持变量替换
+		customBody, ok := config["customBody"].(string)
+		if !ok || customBody == "" {
+			return fmt.Errorf("使用 custom 模板时必须提供 customBody")
+		}
+
+		// 使用 fasttemplate 进行变量替换
+		t := fasttemplate.New(customBody, "{{", "}}")
+		bodyStr := t.ExecuteFuncString(func(w io.Writer, tag string) (int, error) {
+			switch tag {
+			case "message":
+				return w.Write([]byte(message))
+			case "agent.id":
+				return w.Write([]byte(agent.ID))
+			case "agent.name":
+				return w.Write([]byte(agent.Name))
+			case "agent.hostname":
+				return w.Write([]byte(agent.Hostname))
+			case "agent.ip":
+				return w.Write([]byte(agent.IP))
+			case "alert.type":
+				return w.Write([]byte(record.AlertType))
+			case "alert.level":
+				return w.Write([]byte(record.Level))
+			case "alert.status":
+				return w.Write([]byte(record.Status))
+			case "alert.message":
+				return w.Write([]byte(record.Message))
+			case "alert.threshold":
+				return w.Write([]byte(fmt.Sprintf("%.2f", record.Threshold)))
+			case "alert.actualValue":
+				return w.Write([]byte(fmt.Sprintf("%.2f", record.ActualValue)))
+			case "alert.firedAt":
+				return w.Write([]byte(fmt.Sprintf("%d", record.FiredAt)))
+			case "alert.resolvedAt":
+				return w.Write([]byte(fmt.Sprintf("%d", record.ResolvedAt)))
+			default:
+				// 未知变量保持原样
+				return w.Write([]byte("{{" + tag + "}}"))
+			}
+		})
+		reqBody = strings.NewReader(bodyStr)
+		contentType = "text/plain"
+
+	default:
+		return fmt.Errorf("不支持的 bodyTemplate: %s", bodyTemplate)
+	}
+
+	// 创建请求
+	req, err := http.NewRequestWithContext(ctx, method, webhookURL, reqBody)
+	if err != nil {
+		return fmt.Errorf("创建请求失败: %w", err)
+	}
+
+	// 设置 Content-Type
+	req.Header.Set("Content-Type", contentType)
+
+	// 设置自定义请求头
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+
+	// 发送请求
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("发送请求失败: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// 读取响应
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("请求失败，状态码: %d, 响应: %s", resp.StatusCode, string(respBody))
+	}
+
+	n.logger.Info("自定义Webhook发送成功",
+		zap.String("url", webhookURL),
+		zap.String("method", method),
+		zap.String("response", string(respBody)),
+	)
+
 	return nil
 }
 
@@ -279,13 +445,8 @@ func (n *Notifier) sendFeishuByConfig(ctx context.Context, config map[string]int
 }
 
 // sendWebhookByConfig 根据配置发送自定义Webhook
-func (n *Notifier) sendWebhookByConfig(ctx context.Context, config map[string]interface{}, message string) error {
-	url, ok := config["url"].(string)
-	if !ok || url == "" {
-		return fmt.Errorf("自定义Webhook配置缺少 url")
-	}
-
-	return n.sendCustomWebhook(ctx, url, message)
+func (n *Notifier) sendWebhookByConfig(ctx context.Context, config map[string]interface{}, agent *models.Agent, record *models.AlertRecord) error {
+	return n.sendCustomWebhook(ctx, config, agent, record)
 }
 
 // SendNotificationByConfig 根据新的配置结构发送通知
@@ -309,7 +470,7 @@ func (n *Notifier) SendNotificationByConfig(ctx context.Context, channelConfig *
 	case "feishu":
 		return n.sendFeishuByConfig(ctx, channelConfig.Config, message)
 	case "webhook":
-		return n.sendWebhookByConfig(ctx, channelConfig.Config, message)
+		return n.sendWebhookByConfig(ctx, channelConfig.Config, agent, record)
 	case "email":
 		// TODO: 实现邮件通知
 		return fmt.Errorf("邮件通知暂未实现")
@@ -354,7 +515,23 @@ func (n *Notifier) SendFeishuByConfig(ctx context.Context, config map[string]int
 	return n.sendFeishuByConfig(ctx, config, message)
 }
 
-// SendWebhookByConfig 导出方法供外部调用
+// SendWebhookByConfig 导出方法供外部调用（测试用）
 func (n *Notifier) SendWebhookByConfig(ctx context.Context, config map[string]interface{}, message string) error {
-	return n.sendWebhookByConfig(ctx, config, message)
+	// 为了测试，创建一个临时的 agent 和 record
+	agent := &models.Agent{
+		ID:       "test-agent",
+		Name:     "测试探针",
+		Hostname: "test-host",
+		IP:       "127.0.0.1",
+	}
+	record := &models.AlertRecord{
+		AlertType:   "test",
+		Level:       "info",
+		Status:      "firing",
+		Message:     message,
+		Threshold:   0,
+		ActualValue: 0,
+		FiredAt:     time.Now().UnixMilli(),
+	}
+	return n.sendWebhookByConfig(ctx, config, agent, record)
 }

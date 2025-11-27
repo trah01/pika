@@ -24,7 +24,22 @@ type NotificationChannelConfig struct {
 // dingtalk: { "secretKey": "xxx", "signSecret": "xxx" }
 // wecom:    { "secretKey": "xxx" }
 // feishu:   { "secretKey": "xxx", "signSecret": "xxx" }
-// webhook:  { "url": "https://..." }
+// webhook:  {
+//   "url": "https://...",
+//   "method": "POST",  // 可选：GET, POST, PUT, PATCH, DELETE，默认 POST
+//   "headers": {"key": "value"},  // 可选：自定义请求头
+//   "bodyTemplate": "json"  // 可选：json(默认), form, custom
+//   "customBody": ""  // 当 bodyTemplate 为 custom 时使用，支持变量替换
+// }
+
+// WebhookConfig 自定义 Webhook 配置结构
+type WebhookConfig struct {
+	URL          string            `json:"url"`                    // Webhook URL
+	Method       string            `json:"method,omitempty"`       // 请求方法，默认 POST
+	Headers      map[string]string `json:"headers,omitempty"`      // 自定义请求头
+	BodyTemplate string            `json:"bodyTemplate,omitempty"` // 请求体模板：json, form, custom
+	CustomBody   string            `json:"customBody,omitempty"`   // 自定义请求体模板（支持变量）
+}
 
 type SystemConfig struct {
 	SystemNameZh string `json:"systemNameZh"` // 系统名称（中文）

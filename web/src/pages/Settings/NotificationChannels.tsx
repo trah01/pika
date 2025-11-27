@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {App, Button, Card, Form, Input, Space, Spin, Switch} from 'antd';
+import {App, Button, Card, Collapse, Form, Input, Select, Space, Spin, Switch} from 'antd';
 import {TestTube} from 'lucide-react';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import type {NotificationChannel} from '../../types';
@@ -64,6 +64,16 @@ const NotificationChannels = () => {
                 } else if (channel.type === 'webhook') {
                     formValues.webhookEnabled = channel.enabled;
                     formValues.webhookUrl = channel.config?.url || '';
+                    formValues.webhookMethod = channel.config?.method || 'POST';
+                    formValues.webhookBodyTemplate = channel.config?.bodyTemplate || 'json';
+                    formValues.webhookCustomBody = channel.config?.customBody || '';
+
+                    // 解析 headers 为数组形式方便编辑
+                    const headers = channel.config?.headers || {};
+                    formValues.webhookHeaders = Object.entries(headers).map(([key, value]) => ({
+                        key,
+                        value
+                    }));
                 }
             });
 
@@ -114,11 +124,25 @@ const NotificationChannels = () => {
 
             // 自定义Webhook
             if (values.webhookEnabled || values.webhookUrl) {
+                // 将 headers 数组转换为对象
+                const headersObj: Record<string, string> = {};
+                if (values.webhookHeaders && Array.isArray(values.webhookHeaders)) {
+                    values.webhookHeaders.forEach((item: { key: string; value: string }) => {
+                        if (item.key && item.value) {
+                            headersObj[item.key] = item.value;
+                        }
+                    });
+                }
+
                 newChannels.push({
                     type: 'webhook',
                     enabled: values.webhookEnabled || false,
                     config: {
                         url: values.webhookUrl || '',
+                        method: values.webhookMethod || 'POST',
+                        bodyTemplate: values.webhookBodyTemplate || 'json',
+                        customBody: values.webhookCustomBody || '',
+                        headers: Object.keys(headersObj).length > 0 ? headersObj : undefined,
                     },
                 });
             }
@@ -349,37 +373,268 @@ const NotificationChannels = () => {
                         <Form.Item
                             noStyle
                             shouldUpdate={(prevValues, currentValues) =>
-                                prevValues.webhookEnabled !== currentValues.webhookEnabled
+                                prevValues.webhookEnabled !== currentValues.webhookEnabled ||
+                                prevValues.webhookBodyTemplate !== currentValues.webhookBodyTemplate
                             }
                         >
                             {({getFieldValue}) =>
                                 getFieldValue('webhookEnabled') ? (
-                                    <Form.Item
-                                        label="Webhook URL"
-                                        name="webhookUrl"
-                                        rules={[
-                                            {required: true, message: '请输入自定义 Webhook URL'},
-                                            {type: 'url', message: '请输入有效的 URL'},
-                                        ]}
-                                        tooltip="将发送完整的告警信息 JSON 到此地址"
-                                    >
-                                        <Input placeholder="https://your-server.com/webhook"/>
-                                    </Form.Item>
+                                    <>
+                                        <Form.Item
+                                            label="Webhook URL"
+                                            name="webhookUrl"
+                                            rules={[
+                                                {required: true, message: '请输入自定义 Webhook URL'},
+                                                {type: 'url', message: '请输入有效的 URL'},
+                                            ]}
+                                        >
+                                            <Input placeholder="https://your-server.com/webhook"/>
+                                        </Form.Item>
+                                        <div className={'mb-4'}>
+                                            <Collapse
+                                                ghost
+                                                items={[
+                                                    {
+                                                        key: '1',
+                                                        label: '高级配置',
+                                                        children: (
+                                                            <Space direction="vertical" className="w-full">
+                                                                {/* HTTP 方法 */}
+                                                                <Form.Item
+                                                                    label="HTTP 方法"
+                                                                    name="webhookMethod"
+                                                                    tooltip="选择 HTTP 请求方法"
+                                                                >
+                                                                    <Select
+                                                                        placeholder="选择 HTTP 方法"
+                                                                        options={[
+                                                                            {label: 'GET', value: 'GET'},
+                                                                            {label: 'POST', value: 'POST'},
+                                                                            {label: 'PUT', value: 'PUT'},
+                                                                            {label: 'PATCH', value: 'PATCH'},
+                                                                            {label: 'DELETE', value: 'DELETE'},
+                                                                        ]}
+                                                                    />
+                                                                </Form.Item>
+
+                                                                {/* 请求体模板 */}
+                                                                <Form.Item
+                                                                    label="请求体模板"
+                                                                    name="webhookBodyTemplate"
+                                                                    tooltip="选择请求体的格式"
+                                                                >
+                                                                    <Select
+                                                                        placeholder="选择请求体模板"
+                                                                        options={[
+                                                                            {
+                                                                                label: 'JSON (默认)',
+                                                                                value: 'json'
+                                                                            },
+                                                                            {
+                                                                                label: 'Form 表单',
+                                                                                value: 'form'
+                                                                            },
+                                                                            {
+                                                                                label: '自定义模板',
+                                                                                value: 'custom'
+                                                                            },
+                                                                        ]}
+                                                                    />
+                                                                </Form.Item>
+
+                                                                {/* 自定义请求体 */}
+                                                                {getFieldValue('webhookBodyTemplate') === 'custom' && (
+                                                                    <Form.Item
+                                                                        label="自定义请求体"
+                                                                        name="webhookCustomBody"
+                                                                        rules={[
+                                                                            {
+                                                                                required: true,
+                                                                                message: '请输入自定义请求体模板'
+                                                                            }
+                                                                        ]}
+                                                                        tooltip="支持变量替换，可用变量见下方说明"
+                                                                    >
+                                                                        <Input.TextArea
+                                                                            rows={6}
+                                                                            placeholder='示例: {"alert": "{{alert.message}}", "host": "{{agent.hostname}}"}'
+                                                                        />
+                                                                    </Form.Item>
+                                                                )}
+
+                                                                {/* 自定义请求头 */}
+                                                                <Form.Item label="自定义请求头"
+                                                                           tooltip="添加自定义 HTTP 请求头">
+                                                                    <Form.List name="webhookHeaders">
+                                                                        {(fields, {add, remove}) => (
+                                                                            <>
+                                                                                {fields.map(({
+                                                                                                 key,
+                                                                                                 name,
+                                                                                                 ...restField
+                                                                                             }) => (
+                                                                                    <Space
+                                                                                        key={key}
+                                                                                        style={{
+                                                                                            display: 'flex',
+                                                                                            marginBottom: 8
+                                                                                        }}
+                                                                                        align="baseline"
+                                                                                    >
+                                                                                        <Form.Item
+                                                                                            {...restField}
+                                                                                            name={[name, 'key']}
+                                                                                            rules={[{
+                                                                                                required: true,
+                                                                                                message: '请输入 Header 名称'
+                                                                                            }]}
+                                                                                        >
+                                                                                            <Input
+                                                                                                placeholder="Header 名称"
+                                                                                                style={{width: 200}}
+                                                                                            />
+                                                                                        </Form.Item>
+                                                                                        <Form.Item
+                                                                                            {...restField}
+                                                                                            name={[name, 'value']}
+                                                                                            rules={[{
+                                                                                                required: true,
+                                                                                                message: '请输入 Header 值'
+                                                                                            }]}
+                                                                                        >
+                                                                                            <Input
+                                                                                                placeholder="Header 值"
+                                                                                                style={{width: 300}}
+                                                                                            />
+                                                                                        </Form.Item>
+                                                                                        <Button
+                                                                                            onClick={() => remove(name)}
+                                                                                            danger
+                                                                                            type="link"
+                                                                                        >
+                                                                                            删除
+                                                                                        </Button>
+                                                                                    </Space>
+                                                                                ))}
+                                                                                <Form.Item>
+                                                                                    <Button
+                                                                                        type="dashed"
+                                                                                        onClick={() => add()}
+                                                                                        block
+                                                                                    >
+                                                                                        添加请求头
+                                                                                    </Button>
+                                                                                </Form.Item>
+                                                                            </>
+                                                                        )}
+                                                                    </Form.List>
+                                                                </Form.Item>
+                                                            </Space>
+                                                        ),
+                                                    },
+                                                ]}
+                                            />
+                                        </div>
+                                    </>
                                 ) : null
                             }
                         </Form.Item>
 
-                        <div className={'space-y-2'}>
-                            <div>请求方式为 POST，消息格式如下</div>
-                            <div>
-                                <pre className={'border p-4 rounded-md'}>
+                        <div className={'space-y-3 text-sm'}>
+                            <div className={'font-semibold'}>请求体格式说明：</div>
+
+                            {/* JSON 格式说明 */}
+                            <div className={'space-y-1'}>
+                                <strong>1. JSON 格式 (默认)：</strong>
+                                <div className={'text-gray-600 text-xs'}>
+                                    发送 <code className={'bg-gray-100 px-1 rounded'}>application/json</code> 格式的数据
+                                </div>
+                                <pre className={'border p-2 rounded-md text-xs mt-1 bg-gray-50'}>
                                     {JSON.stringify({
                                         "msg_type": "text",
-                                        "text": {
-                                            "content": "消息内容",
+                                        "text": {"content": "告警消息内容"},
+                                        "agent": {
+                                            "id": "agent-id",
+                                            "name": "探针名称",
+                                            "hostname": "主机名",
+                                            "ip": "192.168.1.1"
+                                        },
+                                        "alert": {
+                                            "type": "cpu",
+                                            "level": "warning",
+                                            "status": "firing",
+                                            "message": "CPU使用率过高",
+                                            "threshold": 80,
+                                            "actualValue": 85.5,
+                                            "firedAt": 1234567890000,
+                                            "resolvedAt": 0
                                         }
-                                    }, null, 4)}
+                                    }, null, 2)}
                                 </pre>
+                            </div>
+
+                            {/* Form 表单格式说明 */}
+                            <div className={'space-y-1'}>
+                                <strong>2. Form 表单格式：</strong>
+                                <div className={'text-gray-600 text-xs'}>
+                                    发送 <code
+                                    className={'bg-gray-100 px-1 rounded'}>application/x-www-form-urlencoded</code> 格式的数据
+                                </div>
+                                <div className={'border p-2 rounded-md text-xs mt-1 bg-gray-50'}>
+                                    <div className={'font-semibold mb-1'}>包含以下字段：</div>
+                                    <div className={'grid grid-cols-2 gap-x-4 gap-y-1'}>
+                                        <div>• <code>message</code> - 告警消息</div>
+                                        <div>• <code>agent_id</code> - 探针ID</div>
+                                        <div>• <code>agent_name</code> - 探针名称</div>
+                                        <div>• <code>agent_hostname</code> - 主机名</div>
+                                        <div>• <code>agent_ip</code> - IP地址</div>
+                                        <div>• <code>alert_type</code> - 告警类型</div>
+                                        <div>• <code>alert_level</code> - 告警级别</div>
+                                        <div>• <code>alert_status</code> - 告警状态</div>
+                                        <div>• <code>alert_message</code> - 告警详情</div>
+                                        <div>• <code>threshold</code> - 阈值</div>
+                                        <div>• <code>actual_value</code> - 当前值</div>
+                                        <div>• <code>fired_at</code> - 触发时间戳</div>
+                                        <div>• <code>resolved_at</code> - 恢复时间戳</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 自定义模板说明 */}
+                            <div className={'space-y-1'}>
+                                <strong>3. 自定义模板：</strong>
+                                <div className={'text-gray-600 text-xs'}>
+                                    支持变量替换，Content-Type 为 <code
+                                    className={'bg-gray-100 px-1 rounded'}>text/plain</code>
+                                </div>
+                                <div className={'border p-2 rounded-md text-xs mt-1 bg-gray-50'}>
+                                    <div className={'font-semibold mb-1'}>可用变量：</div>
+                                    <div className={'grid grid-cols-2 gap-x-4 gap-y-1'}>
+                                        <div>• <code>{`{{message}}`}</code> - 告警消息</div>
+                                        <div>• <code>{`{{agent.id}}`}</code> - 探针ID</div>
+                                        <div>• <code>{`{{agent.name}}`}</code> - 探针名称</div>
+                                        <div>• <code>{`{{agent.hostname}}`}</code> - 主机名</div>
+                                        <div>• <code>{`{{agent.ip}}`}</code> - IP地址</div>
+                                        <div>• <code>{`{{alert.type}}`}</code> - 告警类型</div>
+                                        <div>• <code>{`{{alert.level}}`}</code> - 告警级别</div>
+                                        <div>• <code>{`{{alert.status}}`}</code> - 告警状态</div>
+                                        <div>• <code>{`{{alert.message}}`}</code> - 告警消息</div>
+                                        <div>• <code>{`{{alert.threshold}}`}</code> - 阈值</div>
+                                        <div>• <code>{`{{alert.actualValue}}`}</code> - 当前值</div>
+                                        <div>• <code>{`{{alert.firedAt}}`}</code> - 触发时间</div>
+                                        <div>• <code>{`{{alert.resolvedAt}}`}</code> - 恢复时间</div>
+                                    </div>
+                                    <div className={'mt-2 pt-2 border-t'}>
+                                        <div className={'font-semibold mb-1'}>示例：</div>
+                                        <pre className={'text-xs'}>
+                                            {`{
+  "alert": "{{alert.message}}",
+  "host": "{{agent.hostname}}",
+  "level": "{{alert.level}}"
+}`}
+                                        </pre>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </Card>

@@ -5,16 +5,14 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"runtime"
 	"time"
 
 	"github.com/dushixiang/pika/pkg/agent/config"
+	"github.com/minio/selfupdate"
 )
 
 // VersionInfo 版本信息
@@ -145,23 +143,6 @@ func (u *Updater) downloadAndUpdate(versionInfo *VersionInfo) error {
 	log.Printf("📥 下载新版本: %s", versionInfo.Version)
 
 	downloadURL := u.cfg.GetDownloadURL()
-	if err := u.updateWithClient(downloadURL); err != nil {
-		return err
-	}
-
-	log.Printf("✅ 新版本已安装到: %s", u.executablePath)
-	return nil
-}
-
-// updateWithClient 使用实例的 httpClient 下载并更新
-func (u *Updater) updateWithClient(downloadURL string) error {
-	execPath := u.executablePath
-
-	// 解析实际路径（处理符号链接）
-	execPath, err := filepath.EvalSymlinks(execPath)
-	if err != nil {
-		return fmt.Errorf("解析可执行文件路径失败: %w", err)
-	}
 
 	// 下载文件
 	resp, err := u.httpClient.Get(downloadURL)
@@ -174,31 +155,18 @@ func (u *Updater) updateWithClient(downloadURL string) error {
 		return fmt.Errorf("HTTP 状态码: %d", resp.StatusCode)
 	}
 
-	// 创建临时文件
-	tmpFile := execPath + ".new"
-	out, err := os.OpenFile(tmpFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
-	if err != nil {
-		return fmt.Errorf("创建临时文件失败: %w", err)
-	}
-	defer out.Close()
-	defer os.Remove(tmpFile)
-
-	// 写入文件
-	written, err := io.Copy(out, resp.Body)
-	if err != nil {
-		return fmt.Errorf("写入文件失败: %w", err)
+	// 使用 selfupdate 应用更新
+	if err := selfupdate.Apply(resp.Body, selfupdate.Options{}); err != nil {
+		return fmt.Errorf("应用更新失败: %w", err)
 	}
 
-	log.Printf("下载完成，文件大小: %d 字节", written)
+	log.Printf("✅ 更新成功，进程即将退出，等待系统服务重启...")
 
-	// 根据操作系统选择不同的更新策略
-	if runtime.GOOS == "windows" {
-		// Windows: 使用批处理脚本延迟替换
-		return updateOnWindows(execPath, tmpFile)
-	}
+	// 退出当前进程，让系统服务管理器（systemd/supervisor等）自动重启
+	// 注意：这要求服务配置了自动重启（如 systemd 的 Restart=always）
+	os.Exit(1)
 
-	// Unix-like: 直接替换
-	return updateOnUnix(execPath, tmpFile)
+	return nil
 }
 
 // CheckUpdate 手动检查更新（用于命令行）
@@ -229,17 +197,6 @@ func CheckUpdate(updateURL, currentVer string) (*VersionInfo, error) {
 
 // Update 手动更新（用于命令行）
 func Update(downloadURL string) error {
-	execPath, err := os.Executable()
-	if err != nil {
-		return fmt.Errorf("获取可执行文件路径失败: %w", err)
-	}
-
-	// 解析实际路径（处理符号链接）
-	execPath, err = filepath.EvalSymlinks(execPath)
-	if err != nil {
-		return fmt.Errorf("解析可执行文件路径失败: %w", err)
-	}
-
 	client := &http.Client{
 		Timeout: 300 * time.Second,
 	}
@@ -255,94 +212,15 @@ func Update(downloadURL string) error {
 		return fmt.Errorf("HTTP 状态码: %d", resp.StatusCode)
 	}
 
-	// 创建临时文件
-	tmpFile := execPath + ".new"
-	out, err := os.OpenFile(tmpFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
-	if err != nil {
-		return fmt.Errorf("创建临时文件失败: %w", err)
-	}
-	defer out.Close()
-	defer os.Remove(tmpFile)
-
-	// 写入文件
-	written, err := io.Copy(out, resp.Body)
-	if err != nil {
-		return fmt.Errorf("写入文件失败: %w", err)
+	// 使用 selfupdate 应用更新
+	if err := selfupdate.Apply(resp.Body, selfupdate.Options{}); err != nil {
+		return fmt.Errorf("应用更新失败: %w", err)
 	}
 
-	log.Printf("下载完成，文件大小: %d 字节", written)
-
-	// 根据操作系统选择不同的更新策略
-	if runtime.GOOS == "windows" {
-		// Windows: 使用批处理脚本延迟替换
-		return updateOnWindows(execPath, tmpFile)
-	}
-
-	// Unix-like: 直接替换
-	return updateOnUnix(execPath, tmpFile)
-}
-
-// updateOnUnix Unix-like 系统的更新逻辑
-func updateOnUnix(execPath, tmpFile string) error {
-	// 备份旧版本
-	backupPath := execPath + ".bak"
-	if err := os.Rename(execPath, backupPath); err != nil {
-		return fmt.Errorf("备份旧版本失败: %w", err)
-	}
-
-	// 替换为新版本
-	if err := os.Rename(tmpFile, execPath); err != nil {
-		// 恢复备份
-		os.Rename(backupPath, execPath)
-		return fmt.Errorf("替换新版本失败: %w", err)
-	}
-
-	// 删除备份
-	os.Remove(backupPath)
-
-	log.Println("✅ 更新完成，进程即将退出，等待系统服务重启...")
+	log.Printf("✅ 更新成功，进程即将退出，等待系统服务重启...")
 
 	// 退出当前进程，让系统服务管理器（systemd/supervisor等）自动重启
 	// 注意：这要求服务配置了自动重启（如 systemd 的 Restart=always）
-	os.Exit(0)
-
-	return nil
-}
-
-// updateOnWindows Windows 系统的更新逻辑
-func updateOnWindows(execPath, tmpFile string) error {
-	// 在 Windows 上，无法直接替换正在运行的可执行文件
-	// 策略: 创建一个批处理脚本来延迟替换和重启
-
-	batScript := execPath + ".update.bat"
-	batContent := fmt.Sprintf(`@echo off
-timeout /t 2 /nobreak >nul
-move /y "%s" "%s.bak"
-move /y "%s" "%s"
-del "%s.bak"
-start "" "%s"
-del "%%~f0"
-`, execPath, execPath, tmpFile, execPath, execPath, execPath)
-
-	if err := os.WriteFile(batScript, []byte(batContent), 0755); err != nil {
-		return fmt.Errorf("创建更新脚本失败: %w", err)
-	}
-
-	log.Println("✅ 更新完成，准备重启进程...")
-
-	// 启动批处理脚本并退出当前进程
-	cmd := exec.Command("cmd.exe", "/C", batScript)
-	cmd.Stdout = nil
-	cmd.Stderr = nil
-	cmd.Stdin = nil
-
-	if err := cmd.Start(); err != nil {
-		os.Remove(batScript)
-		return fmt.Errorf("启动更新脚本失败: %w", err)
-	}
-
-	// 让系统服务管理器来重启（当前进程退出后）
-	log.Println("进程即将退出，等待系统服务重启...")
 	os.Exit(0)
 
 	return nil

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tailwind v4 暗色模式配置 */
+@variant dark (&:where(.dark, .dark *));
+
 /* 全局样式 */
 * {
     scrollbar-width: thin;
@@ -22,4 +25,13 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background: rgb(156, 163, 175);
+}
+
+/* 暗色模式滚动条 */
+.dark ::-webkit-scrollbar-thumb {
+    background: rgb(71, 85, 105);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgb(100, 116, 139);
 }

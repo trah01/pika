@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"time"
 
 	"github.com/dushixiang/pika/internal/models"
 	"github.com/go-orz/orz"
@@ -22,13 +21,13 @@ func NewAgentRepo(db *gorm.DB) *AgentRepo {
 }
 
 // UpdateStatus 更新探针状态
-func (r *AgentRepo) UpdateStatus(ctx context.Context, agentID string, status int) error {
+func (r *AgentRepo) UpdateStatus(ctx context.Context, agentID string, status int, lastSeenAt int64) error {
 	return r.db.WithContext(ctx).
 		Model(&models.Agent{}).
 		Where("id = ?", agentID).
 		Updates(map[string]interface{}{
 			"status":       status,
-			"last_seen_at": time.Now().UnixMilli(),
+			"last_seen_at": lastSeenAt,
 		}).Error
 }
 

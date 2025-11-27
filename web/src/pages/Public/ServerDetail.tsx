@@ -106,21 +106,21 @@ const INTERFACE_COLORS = [
 ];
 
 const LoadingSpinner = () => (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-400"/>
-            <p className="text-sm text-slate-500">数据加载中，请稍候...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-slate-400 dark:text-slate-400"/>
+            <p className="text-sm text-slate-500 dark:text-slate-400">数据加载中，请稍候...</p>
         </div>
     </div>
 );
 
 const EmptyState = ({message = '服务器不存在或已离线'}: { message?: string }) => (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-300">
                 <Server className="h-8 w-8"/>
             </div>
-            <p className="text-sm text-slate-500">{message}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">{message}</p>
         </div>
     </div>
 );
@@ -136,13 +136,13 @@ const Card = ({
     action?: ReactNode;
     children: ReactNode;
 }) => (
-    <section className="rounded-3xl border border-slate-100 bg-white/95 p-6 shadow-sm">
+    <section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 p-6 shadow-sm">
         {(title || description || action) && (
             <div
-                className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                className="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    {title ? <h2 className="text-lg font-semibold text-slate-900">{title}</h2> : null}
-                    {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+                    {title ? <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">{title}</h2> : null}
+                    {description ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p> : null}
                 </div>
                 {action ? <div className="shrink-0">{action}</div> : null}
             </div>
@@ -155,29 +155,29 @@ type AccentVariant = 'blue' | 'emerald' | 'purple' | 'sky' | 'amber';
 
 const accentThemes: Record<AccentVariant, { icon: string; badge: string; highlight: string }> = {
     blue: {
-        icon: 'bg-blue-50 text-blue-600',
-        badge: 'bg-blue-100 text-blue-600',
-        highlight: 'text-blue-600',
+        icon: 'bg-blue-50 dark:bg-sky-900/30 text-blue-600 dark:text-sky-200',
+        badge: 'bg-blue-100 dark:bg-sky-500/15 text-blue-600 dark:text-sky-200',
+        highlight: 'text-blue-600 dark:text-sky-200',
     },
     emerald: {
-        icon: 'bg-emerald-50 text-emerald-600',
-        badge: 'bg-emerald-100 text-emerald-600',
-        highlight: 'text-emerald-600',
+        icon: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-200',
+        badge: 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-200',
+        highlight: 'text-emerald-600 dark:text-emerald-200',
     },
     purple: {
-        icon: 'bg-purple-50 text-purple-600',
-        badge: 'bg-purple-100 text-purple-600',
-        highlight: 'text-purple-600',
+        icon: 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-200',
+        badge: 'bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-200',
+        highlight: 'text-purple-600 dark:text-purple-200',
     },
     sky: {
-        icon: 'bg-sky-50 text-sky-600',
-        badge: 'bg-sky-100 text-sky-600',
-        highlight: 'text-sky-600',
+        icon: 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-200',
+        badge: 'bg-sky-100 dark:bg-sky-500/15 text-sky-600 dark:text-sky-200',
+        highlight: 'text-sky-600 dark:text-sky-200',
     },
     amber: {
-        icon: 'bg-amber-50 text-amber-600',
-        badge: 'bg-amber-100 text-amber-600',
-        highlight: 'text-amber-600',
+        icon: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-200',
+        badge: 'bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-200',
+        highlight: 'text-amber-600 dark:text-amber-200',
     },
 };
 
@@ -185,8 +185,8 @@ const InfoGrid = ({items}: { items: Array<{ label: string; value: ReactNode }> }
     <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
         {items.map((item) => (
             <div key={item.label}>
-                <dt className="text-xs font-medium text-slate-500">{item.label}</dt>
-                <dd className="mt-1 font-medium text-slate-900">{item.value}</dd>
+                <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">{item.label}</dt>
+                <dd className="mt-1 font-medium text-slate-900 dark:text-slate-100">{item.value}</dd>
             </div>
         ))}
     </dl>
@@ -209,8 +209,8 @@ const TimeRangeSelector = ({
                     onClick={() => onChange(option.value)}
                     className={`rounded-lg border px-3 py-1.5 text-sm transition ${
                         isActive
-                            ? 'border-blue-200 bg-blue-600 text-white'
-                            : 'border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:text-blue-600'
+                            ? 'border-sky-200 dark:border-sky-400 bg-sky-600 dark:bg-sky-500 text-white'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-sky-200 dark:hover:border-sky-500 hover:text-sky-600 dark:hover:text-sky-200'
                     }`}
                 >
                     {option.label}
@@ -404,22 +404,22 @@ const SnapshotGrid = ({cards}: { cards: SnapshotCardData[] }) => (
             return (
                 <div
                     key={card.key}
-                    className="rounded-2xl border border-slate-100 bg-white/95 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-slate-950/70"
                 >
                     <div className="mb-3 flex items-start justify-between">
                         <div className="flex items-center gap-2">
                             <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${theme.icon}`}>
                                 <card.icon className="h-4 w-4"/>
                             </span>
-                            <p className="text-sm font-semibold text-slate-900">{card.title}</p>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">{card.title}</p>
                         </div>
                         <span className={`text-xl font-bold ${theme.highlight}`}>{card.usagePercent}</span>
                     </div>
                     <div className="space-y-2">
                         {card.metrics.map((metric) => (
                             <div key={metric.label} className="flex items-center justify-between text-xs">
-                                <span className="text-slate-500">{metric.label}</span>
-                                <span className="ml-2 text-right font-medium text-slate-900">{metric.value}</span>
+                                <span className="text-slate-500 dark:text-slate-400">{metric.label}</span>
+                                <span className="ml-2 text-right font-medium text-slate-900 dark:text-slate-50">{metric.value}</span>
                             </div>
                         ))}
                     </div>
@@ -436,8 +436,8 @@ const SnapshotSection = ({cards}: { cards: SnapshotCardData[] }) => {
     return (
         <div className="space-y-4">
             <div>
-                <h3 className="text-sm font-semibold text-slate-700">资源快照</h3>
-                <p className="mt-1 text-xs text-slate-500">最近 5 秒采集的资源使用状况</p>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">资源快照</h3>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">最近 5 秒采集的资源使用状况</p>
             </div>
             <SnapshotGrid cards={cards}/>
         </div>
@@ -450,8 +450,8 @@ const CustomTooltip = ({active, payload, label, unit = '%'}: MetricsTooltipProps
     }
 
     return (
-        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs">
-            <p className="font-semibold text-slate-700">{label}</p>
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs shadow-sm dark:shadow-slate-950/50">
+            <p className="font-semibold text-slate-700 dark:text-slate-200">{label}</p>
             <div className="mt-1 space-y-1">
                 {payload.map((entry, index) => {
                     if (!entry) {
@@ -468,7 +468,7 @@ const CustomTooltip = ({active, payload, label, unit = '%'}: MetricsTooltipProps
                             : entry.value;
 
                     return (
-                        <p key={`${entry.dataKey ?? index}`} className="flex items-center gap-2 text-slate-600">
+                        <p key={`${entry.dataKey ?? index}`} className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                         <span
                             className="inline-block h-2 w-2 rounded-full"
                             style={{backgroundColor: dotColor}}
@@ -753,7 +753,7 @@ const ServerDetail = () => {
     const lastSeenDisplay = agent ? formatDateTime(agent.lastSeenAt) : '-';
     const displayName = agent?.name?.trim() ? agent.name : '未命名探针';
     const isOnline = agent?.status === 1;
-    const statusDotStyles = isOnline ? 'bg-emerald-500' : 'bg-slate-400';
+    const statusDotStyles = isOnline ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-slate-400 dark:bg-slate-500';
     const statusText = isOnline ? '在线' : '离线';
 
     const networkSummary = latestMetrics?.network
@@ -795,7 +795,7 @@ const ServerDetail = () => {
     }
 
     return (
-        <div className="bg-slate-50">
+        <div className="bg-slate-50 dark:bg-slate-900">
             <div className="mx-auto flex max-w-7xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-8">
                 <section
                     className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 p-6 text-white shadow-xl">
@@ -807,19 +807,19 @@ const ServerDetail = () => {
                                 <button
                                     type="button"
                                     onClick={() => navigate('/')}
-                                    className="group inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/70 transition hover:text-white"
+                                    className="group inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/70 dark:text-white/70 transition hover:text-white dark:hover:text-white"
                                 >
                                     <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-0.5"/>
                                     返回概览
                                 </button>
                                 <div className="flex items-start gap-4">
                                     <div
-                                        className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-white">
+                                        className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 dark:bg-white/10 text-white">
                                         <Server className="h-7 w-7"/>
                                     </div>
                                     <div>
                                         <div className="flex flex-wrap items-center gap-3">
-                                            <h1 className="text-3xl font-semibold">{displayName}</h1>
+                                            <h1 className="text-3xl font-semibold text-white">{displayName}</h1>
                                             <span
                                                 className={`inline-flex items-center gap-1 rounded-full px-3 py-0.5 text-xs font-medium ${
                                                     isOnline
@@ -843,10 +843,10 @@ const ServerDetail = () => {
                                 {heroStats.map((stat) => (
                                     <div
                                         key={stat.label}
-                                        className="rounded-2xl bg-white/10 p-4 text-left backdrop-blur"
+                                        className="rounded-2xl bg-white/10 dark:bg-white/10 p-4 text-left backdrop-blur"
                                     >
                                         <p className="text-[11px] uppercase tracking-[0.3em] text-white/70">{stat.label}</p>
-                                        <p className="mt-2 text-base font-semibold">{stat.value}</p>
+                                        <p className="mt-2 text-base font-semibold text-white">{stat.value}</p>
                                     </div>
                                 ))}
                             </div>
@@ -865,16 +865,16 @@ const ServerDetail = () => {
                     <Card title="系统信息" description="探针基础属性、运行状态与资源概览">
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
-                                    <h3 className="text-sm font-semibold text-slate-700">运行环境</h3>
-                                    <p className="mt-1 text-xs text-slate-500">来自最近一次探针上报的硬件与系统信息</p>
+                                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 p-4">
+                                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">运行环境</h3>
+                                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">来自最近一次探针上报的硬件与系统信息</p>
                                     <div className="mt-4">
                                         <InfoGrid items={environmentInfo}/>
                                     </div>
                                 </div>
-                                <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
-                                    <h3 className="text-sm font-semibold text-slate-700">运行状态</h3>
-                                    <p className="mt-1 text-xs text-slate-500">关键时间与网络指标，帮助快速判断主机健康状况</p>
+                                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 p-4">
+                                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">运行状态</h3>
+                                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">关键时间与网络指标，帮助快速判断主机健康状况</p>
                                     <div className="mt-4">
                                         <InfoGrid items={statusInfo}/>
                                     </div>
@@ -891,9 +891,9 @@ const ServerDetail = () => {
                     >
                         <div className="grid gap-6 md:grid-cols-2">
                             <section>
-                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
                                     <span
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
                                         <Cpu className="h-4 w-4"/>
                                     </span>
                                     CPU 使用率
@@ -907,15 +907,17 @@ const ServerDetail = () => {
                                                     <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
                                                 </linearGradient>
                                             </defs>
-                                            <CartesianGrid stroke="#e5e7eb" strokeDasharray="4 4"/>
+                                            <CartesianGrid stroke="currentColor" strokeDasharray="4 4" className="stroke-slate-200 dark:stroke-slate-600"/>
                                             <XAxis
                                                 dataKey="time"
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                             />
                                             <YAxis
                                                 domain={[0, 100]}
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                                 tickFormatter={(value) => `${value}%`}
                                             />
@@ -933,16 +935,16 @@ const ServerDetail = () => {
                                     </ResponsiveContainer>
                                 ) : (
                                     <div
-                                        className="flex h-52 items-center justify-center rounded-lg border border-dashed border-slate-200 text-sm text-slate-500">
+                                        className="flex h-52 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400">
                                         暂无数据
                                     </div>
                                 )}
                             </section>
 
                             <section>
-                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
                                     <span
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
                                         <MemoryStick className="h-4 w-4"/>
                                     </span>
                                     内存使用率
@@ -956,15 +958,17 @@ const ServerDetail = () => {
                                                     <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                                                 </linearGradient>
                                             </defs>
-                                            <CartesianGrid stroke="#e5e7eb" strokeDasharray="4 4"/>
+                                            <CartesianGrid stroke="currentColor" strokeDasharray="4 4" className="stroke-slate-200 dark:stroke-slate-600"/>
                                             <XAxis
                                                 dataKey="time"
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                             />
                                             <YAxis
                                                 domain={[0, 100]}
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                                 tickFormatter={(value) => `${value}%`}
                                             />
@@ -982,7 +986,7 @@ const ServerDetail = () => {
                                     </ResponsiveContainer>
                                 ) : (
                                     <div
-                                        className="flex h-52 items-center justify-center rounded-lg border border-dashed border-slate-200 text-sm text-slate-500">
+                                        className="flex h-52 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400">
                                         暂无数据
                                     </div>
                                 )}
@@ -990,9 +994,9 @@ const ServerDetail = () => {
 
                             <section>
                                 <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                    <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
                                         <span
-                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
                                             <Network className="h-4 w-4"/>
                                         </span>
                                         网络流量（MB/s）
@@ -1001,7 +1005,7 @@ const ServerDetail = () => {
                                         <select
                                             value={selectedInterface}
                                             onChange={(e) => setSelectedInterface(e.target.value)}
-                                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:border-blue-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                            className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-500 focus:border-sky-500 dark:focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200 dark:focus:ring-sky-500/40"
                                         >
                                             <option value="all">所有网卡</option>
                                             {availableInterfaces.map((iface) => (
@@ -1015,14 +1019,16 @@ const ServerDetail = () => {
                                 {networkChartData.length > 0 ? (
                                     <ResponsiveContainer width="100%" height={220}>
                                         <LineChart data={networkChartData}>
-                                            <CartesianGrid stroke="#e5e7eb" strokeDasharray="4 4"/>
+                                            <CartesianGrid stroke="currentColor" strokeDasharray="4 4" className="stroke-slate-200 dark:stroke-slate-600"/>
                                             <XAxis
                                                 dataKey="time"
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                             />
                                             <YAxis
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                                 tickFormatter={(value) => `${value} MB`}
                                             />
@@ -1062,16 +1068,16 @@ const ServerDetail = () => {
                                     </ResponsiveContainer>
                                 ) : (
                                     <div
-                                        className="flex h-52 items-center justify-center rounded-lg border border-dashed border-slate-200 text-sm text-slate-500">
+                                        className="flex h-52 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400">
                                         暂无数据
                                     </div>
                                 )}
                             </section>
 
                             <section>
-                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
                                     <span
-                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-600">
+                                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
                                         <HardDrive className="h-4 w-4"/>
                                     </span>
                                     磁盘 I/O (MB/s)
@@ -1079,14 +1085,16 @@ const ServerDetail = () => {
                                 {diskIOChartData.length > 0 ? (
                                     <ResponsiveContainer width="100%" height={220}>
                                         <LineChart data={diskIOChartData}>
-                                            <CartesianGrid stroke="#e5e7eb" strokeDasharray="4 4"/>
+                                            <CartesianGrid stroke="currentColor" strokeDasharray="4 4" className="stroke-slate-200 dark:stroke-slate-600"/>
                                             <XAxis
                                                 dataKey="time"
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                             />
                                             <YAxis
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                                 tickFormatter={(value) => `${value} MB`}
                                             />
@@ -1114,7 +1122,7 @@ const ServerDetail = () => {
                                     </ResponsiveContainer>
                                 ) : (
                                     <div
-                                        className="flex h-52 items-center justify-center rounded-lg border border-dashed border-slate-200 text-sm text-slate-500">
+                                        className="flex h-52 items-center justify-center rounded-lg border border-dashed border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400">
                                         暂无数据
                                     </div>
                                 )}
@@ -1122,31 +1130,34 @@ const ServerDetail = () => {
 
                             {gpuChartData.length > 0 && (
                                 <section>
-                                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
                                         <span
-                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-violet-600">
+                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400">
                                             <Zap className="h-4 w-4"/>
                                         </span>
                                         GPU 使用率与温度
                                     </h3>
                                     <ResponsiveContainer width="100%" height={220}>
                                         <LineChart data={gpuChartData}>
-                                            <CartesianGrid stroke="#e5e7eb" strokeDasharray="4 4"/>
+                                            <CartesianGrid stroke="currentColor" strokeDasharray="4 4" className="stroke-slate-200 dark:stroke-slate-600"/>
                                             <XAxis
                                                 dataKey="time"
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                             />
                                             <YAxis
                                                 yAxisId="left"
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                                 tickFormatter={(value) => `${value}%`}
                                             />
                                             <YAxis
                                                 yAxisId="right"
                                                 orientation="right"
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                                 tickFormatter={(value) => `${value}°C`}
                                             />
@@ -1179,9 +1190,9 @@ const ServerDetail = () => {
 
                             {temperatureChartData.length > 0 && (
                                 <section>
-                                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
                                         <span
-                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+                                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400">
                                             <Thermometer className="h-4 w-4"/>
                                         </span>
                                         系统温度
@@ -1194,14 +1205,16 @@ const ServerDetail = () => {
                                                     <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
                                                 </linearGradient>
                                             </defs>
-                                            <CartesianGrid stroke="#e5e7eb" strokeDasharray="4 4"/>
+                                            <CartesianGrid stroke="currentColor" strokeDasharray="4 4" className="stroke-slate-200 dark:stroke-slate-600"/>
                                             <XAxis
                                                 dataKey="time"
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                             />
                                             <YAxis
-                                                stroke="#94a3b8"
+                                                stroke="currentColor"
+                                                className="stroke-slate-400 dark:stroke-slate-500"
                                                 style={{fontSize: '12px'}}
                                                 tickFormatter={(value) => `${value}°C`}
                                             />
@@ -1230,44 +1243,44 @@ const ServerDetail = () => {
                                 {latestMetrics.gpu.map((gpu) => (
                                     <div
                                         key={gpu.index}
-                                        className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+                                        className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 p-4 shadow-sm"
                                     >
                                         <div className="mb-3 flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <span
-                                                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                                                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400">
                                                     <Zap className="h-4 w-4"/>
                                                 </span>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-slate-900">GPU {gpu.index}</p>
-                                                    <p className="text-xs text-slate-500">{gpu.name}</p>
+                                                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">GPU {gpu.index}</p>
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400">{gpu.name}</p>
                                                 </div>
                                             </div>
-                                            <span className="text-2xl font-bold text-purple-600">
+                                            <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                                                 {gpu.utilization.toFixed(1)}%
                                             </span>
                                         </div>
                                         <div className="space-y-2 text-xs">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-slate-500">温度</span>
+                                                <span className="text-slate-500 dark:text-slate-400">温度</span>
                                                 <span
-                                                    className="font-medium text-slate-900">{gpu.temperature.toFixed(1)}°C</span>
+                                                    className="font-medium text-slate-900 dark:text-slate-100">{gpu.temperature.toFixed(1)}°C</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-slate-500">显存</span>
-                                                <span className="font-medium text-slate-900">
+                                                <span className="text-slate-500 dark:text-slate-400">显存</span>
+                                                <span className="font-medium text-slate-900 dark:text-slate-100">
                                                     {formatBytes(gpu.memoryUsed)} / {formatBytes(gpu.memoryTotal)}
                                                 </span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-slate-500">功耗</span>
+                                                <span className="text-slate-500 dark:text-slate-400">功耗</span>
                                                 <span
-                                                    className="font-medium text-slate-900">{gpu.powerDraw.toFixed(1)}W</span>
+                                                    className="font-medium text-slate-900 dark:text-slate-100">{gpu.powerDraw.toFixed(1)}W</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-slate-500">风扇转速</span>
+                                                <span className="text-slate-500 dark:text-slate-400">风扇转速</span>
                                                 <span
-                                                    className="font-medium text-slate-900">{gpu.fanSpeed.toFixed(0)}%</span>
+                                                    className="font-medium text-slate-900 dark:text-slate-100">{gpu.fanSpeed.toFixed(0)}%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1283,13 +1296,13 @@ const ServerDetail = () => {
                                 {latestMetrics.temperature.map((temp) => (
                                     <div
                                         key={temp.sensorKey}
-                                        className="rounded-xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white p-4"
+                                        className="rounded-xl border border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 to-white dark:from-slate-700 dark:to-slate-800 p-4"
                                     >
                                         <div className="flex items-center gap-2 mb-2">
-                                            <Thermometer className="h-4 w-4 text-orange-500"/>
-                                            <p className="text-xs font-medium text-slate-600 truncate">{temp.sensorLabel}</p>
+                                            <Thermometer className="h-4 w-4 text-orange-500 dark:text-orange-400"/>
+                                            <p className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">{temp.sensorLabel}</p>
                                         </div>
-                                        <p className="text-2xl font-bold text-slate-900">{temp.temperature.toFixed(1)}°C</p>
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{temp.temperature.toFixed(1)}°C</p>
                                     </div>
                                 ))}
                             </div>

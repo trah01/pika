@@ -17,7 +17,7 @@ const PublicLayout = () => {
     const [showViewToggle, setShowViewToggle] = useState(false);
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 flex flex-col">
+        <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col transition-colors">
             <PublicHeader
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
