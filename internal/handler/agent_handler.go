@@ -852,6 +852,9 @@ detect_platform() {
         aarch64|arm64)
             ARCH="arm64"
             ;;
+        loongarch64)
+            ARCH="loong64"
+            ;;
         *)
             echo_error "不支持的架构: $ARCH"
             exit 1
