@@ -27,14 +27,26 @@ export const saveProperty = async <T>(propertyId: string, name: string, value: T
 
 const PROPERTY_ID_METRICS_CONFIG = 'metrics_config';
 
-export interface MetricsConfig {
-    retentionHours: number;  // 数据保留时长（小时）
-    maxQueryPoints: number;  // 最大查询点数
+export interface TimeRangeOption {
+    label: string;  // 显示标签，如 "15分钟"
+    value: string;  // 值，如 "15m"
 }
 
-// 获取指标配置
+export interface MetricsConfig {
+    retentionHours: number;       // 数据保留时长（小时）
+    maxQueryPoints: number;       // 最大查询点数
+    timeRangeOptions: TimeRangeOption[];  // 时间范围选项
+}
+
+// 获取指标配置（管理后台使用，需认证）
 export const getMetricsConfig = async (): Promise<MetricsConfig> => {
     return getProperty<MetricsConfig>(PROPERTY_ID_METRICS_CONFIG);
+};
+
+// 获取指标配置（公开访问，用于前端获取时间范围选项等）
+export const getMetricsConfigPublic = async (): Promise<MetricsConfig> => {
+    const response = await get<MetricsConfig>('/metrics-config');
+    return response.data;
 };
 
 // 保存指标配置

@@ -49,8 +49,15 @@ type SystemConfig struct {
 	DefaultView  string `json:"defaultView"`  // 默认视图 grid | list
 }
 
+// TimeRangeOption 时间范围选项
+type TimeRangeOption struct {
+	Label string `json:"label"` // 显示标签，如 "15分钟"
+	Value string `json:"value"` // 值，如 "15m"
+}
+
 // MetricsConfig 指标数据配置
 type MetricsConfig struct {
-	RetentionHours int `json:"retentionHours"` // 原始数据保留小时数（默认168小时=7天）
-	MaxQueryPoints int `json:"maxQueryPoints"` // 查询返回的最大数据点数（默认720）
+	RetentionHours   int               `json:"retentionHours"`   // 原始数据保留小时数（默认168小时=7天）
+	MaxQueryPoints   int               `json:"maxQueryPoints"`   // 查询返回的最大数据点数（默认300）
+	TimeRangeOptions []TimeRangeOption `json:"timeRangeOptions"` // 前端时间范围选项
 }

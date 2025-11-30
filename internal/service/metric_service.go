@@ -15,7 +15,7 @@ import (
 
 const (
 	defaultMetricsRetentionHours = 24 * 7 // 默认保留 7 天
-	defaultMaxQueryPoints        = 720    // 默认最多返回 720 个点
+	defaultMaxQueryPoints        = 300    // 默认最多返回 300 个点（优化前端渲染性能）
 )
 
 var allowedIntervals = []int{
@@ -24,6 +24,17 @@ var allowedIntervals = []int{
 	60, 120, 300,
 	600, 900, 1800,
 	3600, 7200, 14400,
+}
+
+// 聚合任务支持的 bucket 列表（升序）
+// 与前端 timeRangeOptions 对齐，优化查询效率
+var aggregationBuckets = []int{
+	60,   // 1 分钟   - 适用于 15分钟、30分钟时间范围
+	300,  // 5 分钟   - 适用于 1小时、3小时时间范围
+	900,  // 15 分钟  - 适用于 6小时、12小时时间范围
+	1800, // 30 分钟  - 适用于 1天时间范围
+	3600, // 1 小时   - 适用于 3天时间范围
+	7200, // 2 小时   - 适用于 7天时间范围
 }
 
 // MetricService 指标服务
@@ -390,17 +401,16 @@ func (s *MetricService) GetMetrics(ctx context.Context, agentID, metricType stri
 	var bucketSeconds int
 	useAgg := false
 	if aggCapable[metricType] {
-		if interval >= 3600 {
-			bucketSeconds = 3600
-			useAgg = true
-		} else if interval >= 300 {
-			bucketSeconds = 300
-			useAgg = true
-		} else if interval >= 60 {
-			bucketSeconds = 60
-			useAgg = true
-		}
+		bucketSeconds = chooseAggregationBucket(interval)
+		useAgg = bucketSeconds > 0
 	}
+
+	// 将时间范围对齐到最终使用的 bucket，避免不同时间框架出现桶数量偏差
+	bucketMs := int64(interval * 1000)
+	if useAgg {
+		bucketMs = int64(bucketSeconds * 1000)
+	}
+	start, end = alignTimeRangeToBucket(start, end, bucketMs)
 
 	switch metricType {
 	case "cpu":
@@ -563,6 +573,33 @@ func maxInt(a, b int) int {
 	return b
 }
 
+// alignTimeRangeToBucket 将时间范围对齐到桶边界，确保不同时间框架的桶数一致
+func alignTimeRangeToBucket(start, end int64, bucketMs int64) (int64, int64) {
+	if bucketMs <= 0 {
+		return start, end
+	}
+	alignedStart := (start / bucketMs) * bucketMs
+	endBucket := ((end - 1) / bucketMs) * bucketMs
+	alignedEnd := endBucket + bucketMs - 1
+	if alignedEnd < alignedStart {
+		alignedEnd = alignedStart
+	}
+	return alignedStart, alignedEnd
+}
+
+// chooseAggregationBucket 根据请求的 interval 选择最合适的聚合 bucket（取不小于 interval 的最小桶）
+func chooseAggregationBucket(interval int) int {
+	if interval <= 0 {
+		return 0
+	}
+	for _, bucket := range aggregationBuckets {
+		if interval <= bucket {
+			return bucket
+		}
+	}
+	return aggregationBuckets[len(aggregationBuckets)-1]
+}
+
 // getMetricsConfig 获取指标配置
 func (s *MetricService) getMetricsConfig(ctx context.Context) models.MetricsConfig {
 	cfg := models.MetricsConfig{
@@ -606,10 +643,8 @@ func (s *MetricService) StartAggregationTask(ctx context.Context) {
 func (s *MetricService) runAggregation(ctx context.Context) {
 	cfg := s.getMetricsConfig(ctx)
 	retention := time.Duration(cfg.RetentionHours) * time.Hour
-	// 标准 bucket：1m、5m、1h
-	buckets := []int{60, 300, 3600}
 
-	for _, bucket := range buckets {
+	for _, bucket := range aggregationBuckets {
 		s.aggregateMetric(ctx, "cpu", bucket, retention, s.metricRepo.AggregateCPUToAgg)
 		s.aggregateMetric(ctx, "memory", bucket, retention, s.metricRepo.AggregateMemoryToAgg)
 		s.aggregateMetric(ctx, "disk", bucket, retention, s.metricRepo.AggregateDiskToAgg)

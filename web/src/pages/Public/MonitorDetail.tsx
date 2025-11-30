@@ -16,6 +16,7 @@ import {
 import type {TooltipProps} from 'recharts';
 import {Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis,} from 'recharts';
 import {type AggregatedMonitorMetric, getMonitorHistory, getMonitorStatsById} from '@/api/monitor.ts';
+import { getMetricsConfigPublic, type TimeRangeOption } from '@/api/property.ts';
 import type {MonitorStats} from '@/types';
 
 const formatTime = (ms: number): string => {
@@ -300,19 +301,37 @@ const AGENT_COLORS = [
     '#14b8a6', // teal
 ];
 
-const timeRangeOptions = [
-    {label: '15分钟', value: '15m'},
-    {label: '30分钟', value: '30m'},
-    {label: '1小时', value: '1h'},
-] as const;
-
-type TimeRange = typeof timeRangeOptions[number]['value'];
-
 const MonitorDetail = () => {
     const navigate = useNavigate();
     const {id} = useParams<{ id: string }>();
     const [selectedAgent, setSelectedAgent] = useState<string>('all');
-    const [timeRange, setTimeRange] = useState<TimeRange>('15m');
+    const [timeRange, setTimeRange] = useState<string>('15m');
+    const [timeRangeOptions, setTimeRangeOptions] = useState<TimeRangeOption[]>([]);
+
+    // 从后端获取时间范围选项
+    useEffect(() => {
+        getMetricsConfigPublic()
+            .then(config => {
+                if (config.timeRangeOptions && config.timeRangeOptions.length > 0) {
+                    setTimeRangeOptions(config.timeRangeOptions);
+                } else {
+                    // 如果后端没有配置，使用默认值
+                    setTimeRangeOptions([
+                        {label: '15分钟', value: '15m'},
+                        {label: '30分钟', value: '30m'},
+                        {label: '1小时', value: '1h'},
+                    ]);
+                }
+            })
+            .catch(() => {
+                // 如果请求失败，使用默认值
+                setTimeRangeOptions([
+                    {label: '15分钟', value: '15m'},
+                    {label: '30分钟', value: '30m'},
+                    {label: '1小时', value: '1h'},
+                ]);
+            });
+    }, []);
 
     const {data: monitorStats = [], isLoading} = useQuery<MonitorStats[]>({
         queryKey: ['monitorStats', id],

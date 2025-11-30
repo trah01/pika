@@ -150,6 +150,12 @@ func (h *PropertyHandler) GetLogo(c echo.Context) error {
 	return c.Blob(http.StatusOK, contentType, imageData)
 }
 
+// GetMetricsConfig 获取指标配置（公开访问）
+func (h *PropertyHandler) GetMetricsConfig(c echo.Context) error {
+	config := h.service.GetMetricsConfig(c.Request().Context())
+	return c.JSON(http.StatusOK, config)
+}
+
 // TestNotificationChannel 测试通知渠道（从数据库读取配置）
 func (h *PropertyHandler) TestNotificationChannel(c echo.Context) error {
 	channelType := c.Param("type")

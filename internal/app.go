@@ -195,6 +195,9 @@ func setupApi(app *orz.App, components *AppComponents) {
 
 		// Logo（公开访问）- 用于公共页面只获取 Logo
 		publicApiWithOptionalAuth.GET("/logo", components.PropertyHandler.GetLogo)
+
+		// 指标配置（公开访问）- 用于获取时间范围选项等配置
+		publicApiWithOptionalAuth.GET("/metrics-config", components.PropertyHandler.GetMetricsConfig)
 	}
 
 	// WebSocket 路由（探针连接）

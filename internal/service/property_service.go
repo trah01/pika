@@ -173,7 +173,18 @@ func (s *PropertyService) InitializeDefaultConfigs(ctx context.Context) error {
 			Name: "指标数据配置",
 			Value: models.MetricsConfig{
 				RetentionHours: 168, // 默认7天
-				MaxQueryPoints: 720, // 默认720个点
+				MaxQueryPoints: 300, // 默认300个点（优化前端渲染性能）
+				TimeRangeOptions: []models.TimeRangeOption{
+					{Label: "15分钟", Value: "15m"},
+					{Label: "30分钟", Value: "30m"},
+					{Label: "1小时", Value: "1h"},
+					{Label: "3小时", Value: "3h"},
+					{Label: "6小时", Value: "6h"},
+					{Label: "12小时", Value: "12h"},
+					{Label: "1天", Value: "1d"},
+					{Label: "3天", Value: "3d"},
+					{Label: "7天", Value: "7d"},
+				},
 			},
 		},
 	}

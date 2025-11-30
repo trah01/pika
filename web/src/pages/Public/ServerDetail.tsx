@@ -32,6 +32,7 @@ import {
     getAvailableNetworkInterfaces,
     type GetAgentMetricsRequest,
 } from '@/api/agent.ts';
+import { getMetricsConfigPublic, type TimeRangeOption } from '@/api/property.ts';
 import type {
     Agent,
     AggregatedCPUMetric,
@@ -86,20 +87,6 @@ const formatDateTime = (value: string | number | undefined | null): string => {
 
     return date.toLocaleString('zh-CN');
 };
-
-const timeRangeOptions = [
-    {label: '15分钟', value: '15m'},
-    {label: '30分钟', value: '30m'},
-    {label: '1小时', value: '1h'},
-    {label: '3小时', value: '3h'},
-    {label: '6小时', value: '6h'},
-    {label: '12小时', value: '12h'},
-    {label: '1天', value: '1d'},
-    {label: '3天', value: '3d'},
-    {label: '7天', value: '7d'},
-] as const;
-
-type TimeRange = typeof timeRangeOptions[number]['value'];
 
 // 网卡颜色配置（上行和下行使用不同的色调）
 const INTERFACE_COLORS = [
@@ -221,12 +208,14 @@ const InfoGrid = ({items}: { items: Array<{ label: string; value: ReactNode }> }
 const TimeRangeSelector = ({
                                value,
                                onChange,
+                               options,
                            }: {
-    value: TimeRange;
-    onChange: (value: TimeRange) => void;
+    value: string;
+    onChange: (value: string) => void;
+    options: TimeRangeOption[];
 }) => (
     <div className="flex flex-wrap items-center gap-2">
-        {timeRangeOptions.map((option) => {
+        {options.map((option) => {
             const isActive = option.value === value;
             return (
                 <button
@@ -346,7 +335,7 @@ const useAgentOverview = (agentId?: string) => {
     return {agent, latestMetrics, loading};
 };
 
-const useAggregatedMetrics = (agentId: string | undefined, range: TimeRange) => {
+const useAggregatedMetrics = (agentId: string | undefined, range: string) => {
     const [metrics, setMetrics] = useState<MetricsState>(() => createEmptyMetricsState());
 
     useEffect(() => {
@@ -488,10 +477,48 @@ const ServerDetail = () => {
     const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
 
-    const [timeRange, setTimeRange] = useState<TimeRange>('15m');
+    const [timeRange, setTimeRange] = useState<string>('15m');
+    const [timeRangeOptions, setTimeRangeOptions] = useState<TimeRangeOption[]>([]);
     const [selectedInterface, setSelectedInterface] = useState<string>('all');
     const {agent, latestMetrics, loading} = useAgentOverview(id);
     const metricsData = useAggregatedMetrics(id, timeRange);
+
+    // 从后端获取时间范围选项
+    useEffect(() => {
+        getMetricsConfigPublic()
+            .then(config => {
+                if (config.timeRangeOptions && config.timeRangeOptions.length > 0) {
+                    setTimeRangeOptions(config.timeRangeOptions);
+                } else {
+                    // 如果后端没有配置，使用默认值
+                    setTimeRangeOptions([
+                        {label: '15分钟', value: '15m'},
+                        {label: '30分钟', value: '30m'},
+                        {label: '1小时', value: '1h'},
+                        {label: '3小时', value: '3h'},
+                        {label: '6小时', value: '6h'},
+                        {label: '12小时', value: '12h'},
+                        {label: '1天', value: '1d'},
+                        {label: '3天', value: '3d'},
+                        {label: '7天', value: '7d'},
+                    ]);
+                }
+            })
+            .catch(() => {
+                // 如果请求失败，使用默认值
+                setTimeRangeOptions([
+                    {label: '15分钟', value: '15m'},
+                    {label: '30分钟', value: '30m'},
+                    {label: '1小时', value: '1h'},
+                    {label: '3小时', value: '3h'},
+                    {label: '6小时', value: '6h'},
+                    {label: '12小时', value: '12h'},
+                    {label: '1天', value: '1d'},
+                    {label: '3天', value: '3d'},
+                    {label: '7天', value: '7d'},
+                ]);
+            });
+    }, []);
 
     const cpuChartData = useMemo(
         () =>
@@ -959,7 +986,7 @@ const ServerDetail = () => {
                     <Card
                         title="历史趋势"
                         description="针对选定时间范围展示 CPU、内存与网络的变化趋势"
-                        action={<TimeRangeSelector value={timeRange} onChange={setTimeRange}/>}
+                        action={<TimeRangeSelector value={timeRange} onChange={setTimeRange} options={timeRangeOptions}/>}
                     >
                         <div className="grid gap-6 md:grid-cols-2">
                             <section>
