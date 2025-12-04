@@ -36,7 +36,7 @@ App:
     ClientSecret: "your-client-secret"
     RedirectURL: "http://localhost:8080/oidc/callback"  # 前端回调页面
 
-  # GitHub OAuth 认证配置（可选）
+  # GitHub OAuth 认证配置（可选）1
   # 创建 GitHub OAuth App: https://github.com/settings/developers
   GitHub:
     Enabled: false
