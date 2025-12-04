@@ -113,10 +113,10 @@ const AdminLayout = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen">
             {/* 顶部导航栏 */}
             <header
-                className="fixed top-0 left-0 right-0 z-[300] h-14 border-b border-white/20 bg-[#060b16]/95 backdrop-blur">
+                className="fixed top-0 left-0 right-0 z-[300] h-14 border-b border-white/10 bg-slate-900/70 backdrop-blur-xl">
                 <div className="flex h-full items-center justify-between px-4">
                     <div className="flex items-center gap-3 text-white">
                         <div className="flex items-center justify-center">
@@ -173,7 +173,7 @@ const AdminLayout = () => {
 
             {/* 侧边栏 */}
             <aside
-                className="fixed left-0 z-[200] hidden h-screen overflow-hidden border-r border-white/60 bg-white/90 shadow-sm backdrop-blur lg:block"
+                className="glass-panel fixed left-0 z-[200] hidden h-screen overflow-hidden border-r border-white/40 lg:block"
                 style={{
                     width: SIDEBAR_WIDTH,
                     paddingTop: HEADER_HEIGHT,
@@ -181,7 +181,7 @@ const AdminLayout = () => {
             >
                 <div className="flex h-full flex-col">
                     <div className="px-4 py-4">
-                        <p className="text-xs uppercase tracking-[0.3em] text-gray-400">导航</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-gray-500">导航</p>
                         <p className="mt-1 text-lg font-semibold text-gray-900">管理面板</p>
                     </div>
                     {/* 菜单区域 */}
@@ -197,13 +197,13 @@ const AdminLayout = () => {
                                         className={cn(
                                             'group relative flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm transition-all cursor-pointer',
                                             isActive
-                                                ? 'bg-gradient-to-r from-blue-500/10 to-blue-500/5 text-blue-600 shadow-sm'
-                                                : 'text-gray-600 hover:bg-gray-100'
+                                                ? 'bg-blue-500/10 text-blue-700 shadow-sm'
+                                                : 'text-gray-600 hover:bg-white/50'
                                         )}
                                     >
                                         <span
                                             className={cn(
-                                                'flex h-8 w-8 items-center justify-center rounded-xl bg-white text-gray-500 shadow-sm',
+                                                'flex h-8 w-8 items-center justify-center rounded-xl bg-white/60 text-gray-500 shadow-sm backdrop-blur-sm',
                                                 isActive && 'bg-blue-600 text-white'
                                             )}
                                         >
@@ -211,7 +211,7 @@ const AdminLayout = () => {
                                         </span>
                                         <span className="truncate font-medium">{item.label}</span>
                                         {isActive &&
-                                            <span className="ml-auto text-[10px] uppercase text-blue-500">当前</span>}
+                                            <span className="ml-auto text-[10px] uppercase text-blue-600">当前</span>}
                                     </button>
                                 );
                             })}
@@ -220,9 +220,9 @@ const AdminLayout = () => {
 
                     {/* 版本信息 */}
                     {version && (
-                        <div className="border-t border-gray-100 px-4 py-4">
-                            <div className="rounded-2xl bg-gray-50/90 p-3 shadow-inner">
-                                <p className="text-[11px] uppercase tracking-[0.25em] text-gray-400">版本信息</p>
+                        <div className="border-t border-white/20 px-4 py-4">
+                            <div className="rounded-2xl bg-white/40 p-3 shadow-sm backdrop-blur-sm">
+                                <p className="text-[11px] uppercase tracking-[0.25em] text-gray-500">版本信息</p>
                                 <div className="mt-2 flex items-end justify-between">
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900">Server: {version.version}</p>
@@ -239,10 +239,10 @@ const AdminLayout = () => {
             </aside>
 
             {/* 主内容区 */}
-            <div className="flex flex-col bg-white"
+            <div className="flex flex-col"
                  style={{paddingTop: HEADER_HEIGHT, minHeight: `calc(100vh - ${HEADER_HEIGHT}px)`}}>
                 {/* 内容区域 */}
-                <main className="flex-grow bg-white pb-20 pt-5 lg:ml-[240px] lg:pb-10">
+                <main className="flex-grow pb-20 pt-5 lg:ml-[240px] lg:pb-10">
                     <div className="w-full px-4 pb-4 lg:px-8">
                         <Outlet/>
                     </div>
@@ -251,8 +251,9 @@ const AdminLayout = () => {
 
             {/* 移动端底部导航栏 */}
             <nav
-                className="fixed bottom-0 left-0 right-0 z-[300] border-t border-gray-200 bg-white/95 backdrop-blur lg:hidden">
+                className="glass fixed bottom-0 left-0 right-0 z-[300] border-t border-white/40 lg:hidden">
                 <div className="grid h-16 grid-cols-5">
+
                     {menuItems.map((item) => {
                         const isActive = location.pathname.startsWith(item.path);
                         return (

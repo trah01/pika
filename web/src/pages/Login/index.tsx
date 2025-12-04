@@ -67,18 +67,15 @@ const Login = () => {
     };
 
     return (
-        // 1. 背景改为柔和的灰白色，视觉更轻盈
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+        <div className="flex min-h-screen items-center justify-center px-4">
 
-            {/* 2. 卡片去除复杂的渐变边框，使用简单的圆角和优雅的阴影 */}
-            <div className="w-full max-w-[400px] bg-white p-8 sm:p-10 rounded-2xl shadow-xl ring-1 ring-slate-900/5">
+            <div className="w-full max-w-[400px] glass p-8 sm:p-10 rounded-2xl shadow-2xl ring-1 ring-white/50">
 
-                {/* 3. 头部精简：去掉了 Badge，强调品牌名称 */}
                 <div className="mb-10 text-center">
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                         {window.SystemConfig.SystemNameZh}
                     </h1>
-                    <p className="mt-2 text-sm text-slate-500">
+                    <p className="mt-2 text-sm text-slate-600">
                         保持洞察，稳定运行
                     </p>
                 </div>
@@ -89,7 +86,7 @@ const Login = () => {
                     
                     onFinish={onFinish}
                     autoComplete="off"
-                    requiredMark={false} // 4. 隐藏必填星号，界面更干净
+                    requiredMark={false}
                 >
                     <Form.Item
                         name="username"
@@ -97,9 +94,9 @@ const Login = () => {
                         className="mb-4"
                     >
                         <Input
-                            prefix={<UserOutlined className="text-slate-400 mr-1"/>}
+                            prefix={<UserOutlined className="text-slate-500 mr-1"/>}
                             placeholder="用户名"
-                            className="rounded-xl px-4 py-2.5 bg-slate-50 border-slate-200 hover:bg-white focus:bg-white transition-all"
+                            className="rounded-xl px-4 py-2.5 bg-white/40 border-white/40 hover:bg-white/60 focus:bg-white/80 transition-all placeholder:text-slate-400"
                         />
                     </Form.Item>
 
@@ -109,9 +106,9 @@ const Login = () => {
                         className="mb-6"
                     >
                         <Input.Password
-                            prefix={<LockOutlined className="text-slate-400 mr-1"/>}
+                            prefix={<LockOutlined className="text-slate-500 mr-1"/>}
                             placeholder="密码"
-                            className="rounded-xl px-4 py-2.5 bg-slate-50 border-slate-200 hover:bg-white focus:bg-white transition-all"
+                            className="rounded-xl px-4 py-2.5 bg-white/40 border-white/40 hover:bg-white/60 focus:bg-white/80 transition-all placeholder:text-slate-400"
                         />
                     </Form.Item>
 
@@ -121,26 +118,24 @@ const Login = () => {
                             htmlType="submit"
                             loading={loading}
                             block
-                            className="h-11 rounded-xl bg-slate-900 hover:bg-slate-800 font-medium shadow-sm transition-all"
+                            className="h-11 rounded-xl bg-slate-900/90 hover:bg-slate-800 border-none font-medium shadow-lg shadow-slate-900/20 transition-all"
                         >
                             登 录
                         </Button>
                     </Form.Item>
                 </Form>
 
-                {/* 5. 第三方登录区域 */}
                 {(oidcEnabled || githubEnabled) && (
                     <div className="mt-8">
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-slate-200"/>
+                                <span className="w-full border-t border-slate-300/50"/>
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-white px-2 text-slate-400">或者</span>
+                                <span className="px-2 text-slate-500 font-medium drop-shadow-sm">或者</span>
                             </div>
                         </div>
 
-                        {/* 使用 Grid 布局让按钮并排，减少垂直高度占用 */}
                         <div className="mt-6 grid grid-cols-2 gap-3">
                             {githubEnabled && (
                                 <Button
@@ -148,7 +143,7 @@ const Login = () => {
                                     loading={githubLoading}
                                     icon={<GithubOutlined/>}
                                     onClick={handleGitHubLogin}
-                                    className={`h-10 rounded-xl border-slate-200 text-slate-700 font-medium hover:border-slate-300 hover:text-slate-900 ${!oidcEnabled ? 'col-span-2' : ''}`}
+                                    className={`h-10 rounded-xl bg-white/40 border-white/40 text-slate-700 font-medium hover:bg-white/60 hover:text-slate-900 shadow-sm ${!oidcEnabled ? 'col-span-2' : ''}`}
                                 >
                                     GitHub
                                 </Button>
@@ -157,9 +152,9 @@ const Login = () => {
                                 <Button
                                     block
                                     loading={oidcLoading}
-                                    icon={<GlobalOutlined/>} // 换了一个更通用的图标
+                                    icon={<GlobalOutlined/>}
                                     onClick={handleOIDCLogin}
-                                    className={`h-10 rounded-xl border-slate-200 text-slate-700 font-medium hover:border-slate-300 hover:text-slate-900 ${!githubEnabled ? 'col-span-2' : ''}`}
+                                    className={`h-10 rounded-xl bg-white/40 border-white/40 text-slate-700 font-medium hover:bg-white/60 hover:text-slate-900 shadow-sm ${!githubEnabled ? 'col-span-2' : ''}`}
                                 >
                                     OIDC
                                 </Button>

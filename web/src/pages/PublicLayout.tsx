@@ -43,7 +43,7 @@ const PublicLayout = () => {
     }, [viewMode]);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col transition-colors">
+        <div className="min-h-screen text-slate-900 dark:text-slate-100 flex flex-col transition-colors">
             <PublicHeader
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
